@@ -213,76 +213,155 @@ body {
 .search-item .name { font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
 .search-item .price { font-size: 10px; color: #888; }
 
-/* ================= AUTH FORM ================= */
-.auth-form {
-    width: 100%;
-    max-width: 400px;
-    margin: 0 auto;
+/* ================= AUTH & FORM LAYOUT ================= */
+.auth-wrapper {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #fcfcfc;
+    padding: 20px;
 }
 
-.input-group {
-    margin-bottom: 15px;
+.auth-form-container {
+    max-width: 400px;
     width: 100%;
+    padding: 50px 40px;
+    background-color: #fff;
+    border: 1px solid #f0f0f0;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
+    text-align: center;
+    box-sizing: border-box;
     position: relative;
 }
 
-.input-group input, 
-.pass-field-wrapper input {
+/* Centered Logo for Login/Register */
+.auth-logo img {
+    max-width: 250px !important;  
+    height: auto;          
+    margin-bottom: 25px;
+    display: block;
+    margin-left: auto;  
+    margin-right: auto;
+}
+
+.auth-form-container h2 {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 20px;
+    margin: 0 0 10px 0;
+    font-weight: 700;
+}
+
+.auth-subtext {
+    font-size: 11px;
+    color: #888;
+    margin-bottom: 30px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+}
+
+/* ================= INPUT GROUP & EYE ICON FIXES ================= */
+.input-group {
+    margin-bottom: 12px; /* Uniform spacing */
     width: 100%;
-    height: 50px;
-    border: 1px solid #e0e0e0;
+    text-align: left;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Parent container for the input and icon */
+.pass-wrapper, .pass-field-wrapper, .input-wrapper {
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center; /* Helper for alignment */
+}
+
+.auth-form input {
+    width: 100%;
+    height: 48px;
     padding: 0 15px;
-    font-family: 'Roboto', sans-serif;
-    font-size: 14px;
+    border: 1px solid #e0e0e0;
+    font-size: 11px;
+    letter-spacing: 1px;
+    box-sizing: border-box;
+    font-family: inherit;
     outline: none;
-    background-color: #fff;
-    transition: border-color 0.3s ease;
-    box-sizing: border-box; /* IMPORTANT: Prevents padding from pushing elements out */
+    text-transform: uppercase; /* Match branding */
 }
 
-.input-group input:focus {
-    border-color: #000;
-}
-
-/* --- THE EYE ICON FIX --- */
-.pass-field-wrapper {
-    position: relative; /* This makes the icon stay INSIDE this box */
-    width: 100%;
-}
-
-.pass-field-wrapper .toggle-icon {
-    position: absolute;
-    right: 15px;      /* Distance from the right edge */
-    top: 50%;         /* Center vertically */
-    transform: translateY(-50%); /* Adjustment to be perfectly centered */
-    font-size: 14px;
-    color: #bbb;
-    cursor: pointer;
-    z-index: 10;
-    background: white; /* Ensures it sits cleanly on top of the border */
-    padding: 0 5px;
-}
-
-.pass-field-wrapper .toggle-icon:hover {
-    color: #000;
-}
-
-/* Prevent text from going under the eye icon */
-.pass-field-wrapper input {
+/* Space for the eye icon */
+.pass-wrapper input, .pass-field-wrapper input, .input-wrapper input {
     padding-right: 45px !important;
 }
 
-/* Error Messages */
-.field-error {
-    color: #d00;
-    font-size: 10px;
-    font-weight: 700;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-top: 5px;
+.auth-form input:focus {
+    border: 1px solid #111;
+}
+
+/* FIXED: Vertically Centered Eye Icon */
+.toggle-pass, .toggle-icon, .toggle-password {
+    position: absolute;
+    right: 15px;
+    top: 50%; /* Position at vertical midpoint */
+    transform: translateY(-50%); /* Pulls icon up by half its height to center perfectly */
+    cursor: pointer;
+    color: #888;
+    font-size: 14px;
     display: flex;
     align-items: center;
+    justify-content: center;
+    z-index: 10;
+    line-height: 1;
+    user-select: none;
+}
+
+.toggle-pass:hover, .toggle-icon:hover {
+    color: #000;
+}
+
+/* ================= INLINE ERROR MESSAGES ================= */
+.field-error {
+    color: #ff0000;
+    font-size: 9px;
+    margin-top: 5px; /* Appears directly below the box */
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: bold;
+    display: none; /* Shown via JavaScript */
+    align-items: center;
     gap: 5px;
+}
+
+/* Matching the error style in your register pic */
+.field-error::before {
+    content: "▲"; /* Simple minimalist triangle warning */
+    font-size: 8px;
+}
+
+input.input-error {
+    border: 1px solid #ff0000 !important;
+}
+
+/* ================= ACTION BUTTONS ================= */
+.login-btn, .register-btn {
+    width: 100%;
+    padding: 16px;
+    background: #000;
+    color: #fff;
+    border: none;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    cursor: pointer;
+    margin-top: 10px;
+    transition: background 0.3s ease;
+}
+
+.login-btn:hover, .register-btn:hover {
+    background: #333;
 }
 
 /* ================= SUCCESS OVERLAY (CENTERED) ================= */
