@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jan 28, 2026 at 03:38 PM
+-- Generation Time: Feb 03, 2026 at 02:13 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -166,7 +166,8 @@ INSERT INTO `users` (`id`, `first_name`, `last_name`, `email`, `password`, `cont
 (5, 'lynn', 'albarida', 'lynn', '$2y$10$rAxV3UE7O/ivr9aEqZ4EpuZ/nNhaE.wbqyusY.Hf3ZlZqtw68y4Yi', '2147483647', 'user'),
 (6, 'lynn', 'albarida', 'lynn@gmail.com', '$2y$10$MOlFjhItGbaBjqBFxPsveOiLLwz5R6p7XRUl1tjuflHMAadwV64hu', '2147483647', 'user'),
 (7, 'josh', 'semense', 'josh@gmail.com', '$2y$10$D3lMw5gsCSmG.mju3OI6DuyuM3azNApnq3YAj7aU8KDlkqmnOmkq2', '09123234354', 'user'),
-(8, 'Kashmir', 'Espinosa', 'kashmir@gmail.com', '$2y$10$rh3ndtWdVxJir54azlVbO.sGhrnV9huC3p87uuQj7Tl5y3JwRyOOq', '09123432432', 'user');
+(8, 'Kashmir', 'Espinosa', 'kashmir@gmail.com', '$2y$10$rh3ndtWdVxJir54azlVbO.sGhrnV9huC3p87uuQj7Tl5y3JwRyOOq', '09123432432', 'user'),
+(10, 'kashmir', 'espinosa', 'kashmirespinosa@gmail.com', '$2y$10$Eu96u72jXZ7XWTcLKZZxyu971MTRbmgkysyBsCCRXnjdlAJzMj76y', '09333993708', 'user');
 
 --
 -- Indexes for dumped tables
@@ -239,7 +240,7 @@ ALTER TABLE `products`
 -- AUTO_INCREMENT for table `users`
 --
 ALTER TABLE `users`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=10;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=11;
 
 --
 -- Constraints for dumped tables

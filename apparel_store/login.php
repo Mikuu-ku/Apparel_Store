@@ -53,39 +53,9 @@ if (isset($_POST['login'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login | Apparel's Clothing Line</title>
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="assets/css/style.css">
     <link rel="icon" type="image/png" href="assets/images/new_logo.jpg">
-    <style>
-        input.input-error { border-color: #ff0000 !important; }
-        .login-success-overlay { text-align: center; padding: 40px 20px; }
-        .checkmark-circle {
-            width: 80px; height: 80px; border-radius: 50%;
-            background: #000; color: #fff; display: flex;
-            align-items: center; justify-content: center;
-            font-size: 40px; margin: 0 auto 20px;
-        }
-        .pass-wrapper { position: relative; width: 100%; margin-bottom: 5px; }
-        .pass-wrapper input { margin-bottom: 0 !important; padding-right: 45px !important; }
-        .toggle-pass {
-            position: absolute; right: 15px; top: 50%;
-            transform: translateY(-50%); cursor: pointer;
-            color: #888; font-size: 14px;
-        }
-        /* Style for individual warnings */
-        .field-warning {
-            color: #ff0000;
-            font-size: 9px;
-            letter-spacing: 1px;
-            text-transform: uppercase;
-            font-weight: bold;
-            margin-bottom: 15px;
-            display: none; /* Hidden by default */
-            align-items: center;
-            gap: 5px;
-        }
-        .input-group { margin-bottom: 5px; }
-    </style>
 </head>
 <body>
 
@@ -106,92 +76,79 @@ if (isset($_POST['login'])) {
                 </a>
             </div>
 
-            <h2 style="text-transform: uppercase; letter-spacing: 2px;">Sign In</h2>
-            <p class="auth-subtext" style="letter-spacing: 1px;">ACCESS YOUR ACCOUNT</p>
+            <h2>Sign In</h2>
+            <p class="auth-subtext">ACCESS YOUR ACCOUNT</p>
 
             <form method="POST" class="auth-form" id="loginForm" novalidate>
                 <div class="input-group">
-                    <input type="email" name="email" id="email" placeholder="EMAIL ADDRESS" required 
-                           style="width: 100%; padding: 12px; border: 1px solid #ddd; outline: none; font-size: 12px; letter-spacing: 1px; box-sizing: border-box;">
-                    <div id="email-warning" class="field-warning">
-                        <i class="fas fa-exclamation-triangle"></i> PLEASE INPUT EMAIL
-                    </div>
+                    <input type="email" name="email" id="email" placeholder="EMAIL ADDRESS">
+                    <div id="email-error" class="field-error"><i class="fas fa-exclamation-triangle"></i> PLEASE INPUT EMAIL</div>
                 </div>
                 
                 <div class="input-group">
-                    <div class="pass-wrapper">
-                        <input type="password" name="password" id="password" placeholder="PASSWORD" required 
-                               style="width: 100%; padding: 12px; border: 1px solid #ddd; outline: none; font-size: 12px; letter-spacing: 1px; box-sizing: border-box;">
-                        <i class="fas fa-eye toggle-pass" id="togglePass"></i>
+                    <div class="pass-field-wrapper">
+                        <input type="password" name="password" id="password" placeholder="PASSWORD">
+                        <i class="fas fa-eye toggle-icon" onclick="togglePass('password', this)"></i>
                     </div>
-                    <div id="pass-warning" class="field-warning">
-                        <i class="fas fa-exclamation-triangle"></i> PLEASE INPUT PASSWORD
-                    </div>
+                    <div id="password-error" class="field-error"><i class="fas fa-exclamation-triangle"></i> PLEASE INPUT PASSWORD</div>
                 </div>
 
                 <?php if(!empty($error)): ?>
-                    <div class="field-warning" style="display: flex; justify-content: center; margin-top: 10px;">
+                    <div class="field-error" style="display: flex; justify-content: center; margin-bottom: 15px;">
                         <i class="fas fa-exclamation-triangle"></i> <?= $error ?>
                     </div>
                 <?php endif; ?>
                 
-                <button type="submit" name="login" 
-                        style="width: 100%; padding: 14px; background: #000; color: #fff; border: none; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; cursor: pointer; transition: 0.3s; margin-top: 10px;">
-                    Login
-                </button>
+                <button type="submit" name="login">Login</button>
             </form>
 
-            <div class="auth-footer" style="margin-top: 25px; font-size: 10px; letter-spacing: 1.5px; color: #888; text-align: center;">
-                NO ACCOUNT? <a href="register.php" style="color: #000; font-weight: 700; text-decoration: none; border-bottom: 1px solid #000;">JOIN NOW</a>
+            <div class="auth-footer">
+                NO ACCOUNT? <a href="register.php">JOIN NOW</a>
             </div>
         <?php endif; ?>
     </div>
 </div>
 
 <script>
+function togglePass(inputId, icon) {
+    const field = document.getElementById(inputId);
+    if (field.type === "password") {
+        field.type = "text";
+        icon.classList.remove("fa-eye");
+        icon.classList.add("fa-eye-slash");
+    } else {
+        field.type = "password";
+        icon.classList.remove("fa-eye-slash");
+        icon.classList.add("fa-eye");
+    }
+}
+
 document.getElementById('loginForm')?.addEventListener('submit', function(e) {
     const emailInput = document.getElementById('email');
     const passInput = document.getElementById('password');
-    const emailWarning = document.getElementById('email-warning');
-    const passWarning = document.getElementById('pass-warning');
+    const emailError = document.getElementById('email-error');
+    const passError = document.getElementById('password-error');
     
-    // Reset styles
-    emailWarning.style.display = 'none';
-    passWarning.style.display = 'none';
-    emailInput.style.borderColor = "#ddd";
-    passInput.style.borderColor = "#ddd";
+    emailError.style.display = 'none';
+    passError.style.display = 'none';
+    emailInput.classList.remove('input-error');
+    passInput.classList.remove('input-error');
 
-    let hasError = false;
+    let isValid = true;
 
     if (!emailInput.value.trim()) {
-        e.preventDefault();
-        emailWarning.style.display = 'flex';
-        emailInput.style.borderColor = "#ff0000";
-        hasError = true;
+        emailInput.classList.add('input-error');
+        emailError.style.display = 'flex';
+        isValid = false;
     } 
     
     if (!passInput.value.trim()) {
-        e.preventDefault();
-        passWarning.style.display = 'flex';
-        passInput.style.borderColor = "#ff0000";
-        hasError = true;
+        passInput.classList.add('input-error');
+        passError.style.display = 'flex';
+        isValid = false;
     }
 
-    if(hasError && !emailInput.value.trim()) {
-        emailInput.focus();
-    } else if (hasError && !passInput.value.trim()) {
-        passInput.focus();
-    }
-});
-
-const togglePass = document.querySelector('#togglePass');
-const passwordInput = document.querySelector('#password');
-
-togglePass.addEventListener('click', function () {
-    const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-    passwordInput.setAttribute('type', type);
-    this.classList.toggle('fa-eye');
-    this.classList.toggle('fa-eye-slash');
+    if (!isValid) e.preventDefault();
 });
 </script>
 </body>

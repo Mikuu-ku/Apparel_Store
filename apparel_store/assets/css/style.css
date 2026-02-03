@@ -232,10 +232,8 @@ body {
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.03);
     text-align: center;
     box-sizing: border-box;
-    position: relative;
 }
 
-/* Centered Logo for Login/Register */
 .auth-logo img {
     max-width: 250px !important;  
     height: auto;          
@@ -245,37 +243,18 @@ body {
     margin-right: auto;
 }
 
-.auth-form-container h2 {
-    text-transform: uppercase;
-    letter-spacing: 2px;
-    font-size: 20px;
-    margin: 0 0 10px 0;
-    font-weight: 700;
-}
-
-.auth-subtext {
-    font-size: 11px;
-    color: #888;
-    margin-bottom: 30px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-}
-
 /* ================= INPUT GROUP & EYE ICON FIXES ================= */
 .input-group {
-    margin-bottom: 12px; /* Uniform spacing */
+    margin-bottom: 12px;
     width: 100%;
     text-align: left;
     display: flex;
     flex-direction: column;
 }
 
-/* Parent container for the input and icon */
-.pass-wrapper, .pass-field-wrapper, .input-wrapper {
+.pass-field-wrapper {
     position: relative;
     width: 100%;
-    display: flex;
-    align-items: center; /* Helper for alignment */
 }
 
 .auth-form input {
@@ -288,56 +267,39 @@ body {
     box-sizing: border-box;
     font-family: inherit;
     outline: none;
-    text-transform: uppercase; /* Match branding */
+    /* text-transform: uppercase; REMOVED to allow lowercase typing */
 }
 
-/* Space for the eye icon */
-.pass-wrapper input, .pass-field-wrapper input, .input-wrapper input {
+.auth-form input::placeholder {
+    text-transform: uppercase;
+}
+
+.pass-field-wrapper input {
     padding-right: 45px !important;
 }
 
-.auth-form input:focus {
-    border: 1px solid #111;
-}
-
-/* FIXED: Vertically Centered Eye Icon */
-.toggle-pass, .toggle-icon, .toggle-password {
+.toggle-icon {
     position: absolute;
     right: 15px;
-    top: 50%; /* Position at vertical midpoint */
-    transform: translateY(-50%); /* Pulls icon up by half its height to center perfectly */
+    top: 50%;
+    transform: translateY(-50%);
     cursor: pointer;
     color: #888;
     font-size: 14px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     z-index: 10;
-    line-height: 1;
-    user-select: none;
-}
-
-.toggle-pass:hover, .toggle-icon:hover {
-    color: #000;
 }
 
 /* ================= INLINE ERROR MESSAGES ================= */
 .field-error {
     color: #ff0000;
     font-size: 9px;
-    margin-top: 5px; /* Appears directly below the box */
+    margin-top: 5px; 
     letter-spacing: 1px;
     text-transform: uppercase;
     font-weight: bold;
-    display: none; /* Shown via JavaScript */
+    display: none;
     align-items: center;
     gap: 5px;
-}
-
-/* Matching the error style in your register pic */
-.field-error::before {
-    content: "▲"; /* Simple minimalist triangle warning */
-    font-size: 8px;
 }
 
 input.input-error {
@@ -364,7 +326,7 @@ input.input-error {
     background: #333;
 }
 
-/* ================= SUCCESS OVERLAY (CENTERED) ================= */
+/* ================= SUCCESS OVERLAY ================= */
 .login-success-overlay {
     position: fixed;
     top: 0; left: 0; width: 100%; height: 100%;
