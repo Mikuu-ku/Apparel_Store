@@ -39,23 +39,24 @@ $items_query = mysqli_query($conn, "
             <th style="padding: 10px 0;">Product</th>
             <th style="padding: 10px 0;">Size</th>
             <th style="padding: 10px 0; text-align: center;">Qty</th>
-            <th style="padding: 10px 0; text-align: right;">Price</th>
+            <th style="padding: 10px 0; text-align: right;">Total</th>
         </tr>
     </thead>
     <tbody>
         <?php 
         if(mysqli_num_rows($items_query) > 0):
             while($item = mysqli_fetch_assoc($items_query)): 
+                $row_total = $item['price'] * $item['quantity'];
         ?>
         <tr style="border-bottom: 1px solid #fafafa;">
             <td style="padding: 15px 0; display: flex; align-items: center; gap: 15px;">
                 <img src="assets/images/<?php echo $item['image']; ?>" alt="" style="width: 50px; height: 50px; object-fit: cover; border: 1px solid #eee;">
                 <span style="font-size: 13px; font-weight: 500; color: #111;"><?php echo htmlspecialchars($item['name']); ?></span>
             </td>
-            <td style="font-size: 13px; color: #666;"><?php echo $item['size'] ?? 'N/A'; ?></td>
+            <td style="font-size: 13px; color: #666;"><?php echo strtoupper($item['size'] ?? 'N/A'); ?></td>
             <td style="font-size: 13px; color: #666; text-align: center;"><?php echo $item['quantity']; ?></td>
             <td style="font-size: 13px; font-weight: 700; color: #111; text-align: right;">
-                ₱<?php echo number_format($item['price'], 2); ?>
+                ₱<?php echo number_format($row_total, 2); ?>
             </td>
         </tr>
         <?php 
@@ -90,7 +91,14 @@ $items_query = mysqli_query($conn, "
 </div>
 
 <div style="margin-top: 20px; text-align: center;">
+    <?php 
+        $status = strtoupper($order['status']);
+        $status_color = "#111"; // Default Black
+        if($status == 'PENDING') $status_color = "#b76e00"; // Gold
+        if($status == 'CANCELLED') $status_color = "#ff4444"; // Red
+        if($status == 'COMPLETED') $status_color = "#1e7e34"; // Green
+    ?>
     <p style="font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 1px;">
-        Order Status: <span style="color: #111; font-weight: 700;"><?php echo strtoupper($order['status']); ?></span>
+        Order Status: <span style="color: <?= $status_color ?>; font-weight: 700;"><?php echo $status; ?></span>
     </p>
 </div>

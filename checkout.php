@@ -11,8 +11,11 @@ $user_id = $_SESSION['user_id'];
 $first_name = $_SESSION['first_name'] ?? '';
 $last_name = $_SESSION['last_name'] ?? ''; 
 
-// Fetch Cart Data
-$cart_query = "SELECT c.*, p.name, p.price, p.image FROM cart c JOIN products p ON c.product_id = p.id WHERE c.user_id = $user_id";
+// Fetch Cart Data - We specifically pull 'size' and 'price' here
+$cart_query = "SELECT c.*, p.name, p.price, p.image 
+               FROM cart c 
+               JOIN products p ON c.product_id = p.id 
+               WHERE c.user_id = $user_id";
 $cart_items = mysqli_query($conn, $cart_query);
 
 if (mysqli_num_rows($cart_items) == 0) {
@@ -34,7 +37,7 @@ $subtotal = 0;
     <link rel="icon" type="image/png" href="assets/images/new_logo.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        /* FULL-SCREEN PERFECTLY CENTERED OVERLAY */
+        /* OVERLAY STYLES */
         #processOverlay {
             display: none;
             position: fixed;
@@ -59,7 +62,6 @@ $subtotal = 0;
         .error-text { color: #ff0000; font-size: 9px; font-weight: 700; letter-spacing: 1px; margin-top: 5px; display: none; text-transform: uppercase; }
         .form-input.invalid { border-bottom-color: #ff0000; }
 
-        /* PAYMENT DOT INDICATORS */
         .pay-option { padding: 20px; border: 1px solid #eee; margin-bottom: 10px; cursor: pointer; display: flex; justify-content: space-between; align-items: center; transition: 0.2s; }
         .pay-option.active { border-color: #000; background: #fafafa; }
         .pay-option span { font-size: 11px; font-weight: 700; letter-spacing: 1px; }
@@ -83,20 +85,20 @@ $subtotal = 0;
 <div id="processOverlay">
     <div id="loadingUI">
         <div class="loader"></div>
-        <p style="letter-spacing: 3px; font-size: 10px; font-weight: 700;">VERIFYING PAYMENT</p>
+        <p style="letter-spacing: 3px; font-size: 10px; font-weight: 700;">PROCESSING YOUR ORDER</p>
     </div>
     <div id="successUI" style="display: none;">
-        <i class="fas fa-check" style="font-size: 20px; margin-bottom: 40px; display: block;"></i>
+        <i class="fas fa-check-circle" style="font-size: 40px; color: #000; margin-bottom: 20px;"></i>
         <h2 style="letter-spacing: 2px; text-transform: uppercase; font-size: 24px; font-weight: 800; margin-bottom: 20px;">Order Confirmed</h2>
-        <p style="font-size: 14px; color: #000; margin-bottom: 40px;">Thank you for shopping with Apparel's.</p>
-        <a href="index.php" class="btn-save" style="text-decoration: none; padding: 12px 30px; font-size: 11px; background: black; color: white;">CONTINUE SHOPPING</a>
+        <p style="font-size: 14px; color: #666; margin-bottom: 40px;">Thank you for shopping with Apparel's.</p>
+        <a href="index.php" style="text-decoration: none; padding: 15px 40px; font-size: 11px; background: black; color: white; font-weight: 700; letter-spacing: 1px;">CONTINUE SHOPPING</a>
     </div>
 </div>
 
 <header class="header">
-    <div class="container header-container">
-        <div class="logo"><a href="index.php"><img src="assets/images/new_logo.jpg" class="header-logo"></a></div>
-        <div class="header-right"><span class="user-name-text"><?= strtoupper($first_name . " " . $last_name) ?></span></div>
+    <div class="container header-container" style="display: flex; align-items: center; justify-content: space-between; padding: 20px 0;">
+        <div class="logo"><a href="index.php"><img src="assets/images/new_logo.jpg" style="height: 40px;"></a></div>
+        <div class="header-right"><span style="font-size: 10px; font-weight: 800; letter-spacing: 1px;"><?= strtoupper($first_name . " " . $last_name) ?></span></div>
     </div>
 </header>
 
@@ -108,44 +110,44 @@ $subtotal = 0;
                 <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;">
                     <div class="input-box">
                         <label>FIRST NAME</label>
-                        <input type="text" id="fname" class="form-input" value="<?= $first_name ?>" required>
-                        <div class="error-text">Please fill out this field.</div>
+                        <input type="text" id="fname" class="form-input" value="<?= htmlspecialchars($first_name) ?>" required>
+                        <div class="error-text">Required field</div>
                     </div>
                     <div class="input-box">
                         <label>LAST NAME</label>
-                        <input type="text" id="lname" class="form-input" value="<?= $last_name ?>" required>
-                        <div class="error-text">Please fill out this field.</div>
+                        <input type="text" id="lname" class="form-input" value="<?= htmlspecialchars($last_name) ?>" required>
+                        <div class="error-text">Required field</div>
                     </div>
                 </div>
 
                 <div class="input-box">
                     <label>PHONE NUMBER</label>
                     <input type="tel" id="phone" class="form-input" placeholder="09XXXXXXXXX" maxlength="11" oninput="this.value = this.value.replace(/[^0-9]/g, '')" required>
-                    <div class="error-text" id="phone-error">Please enter a valid 11-digit number starting with 09.</div>
+                    <div class="error-text" id="phone-error">Enter valid 11-digit number (09...)</div>
                 </div>
 
                 <div class="input-box">
                     <label>COMPLETE ADDRESS</label>
-                    <input type="text" id="address" class="form-input" placeholder="Street, Barangay, City, Province" required>
-                    <div class="error-text">Please fill out this field.</div>
+                    <input type="text" id="address" class="form-input" placeholder="House No, Street, Brgy, City, Province" required>
+                    <div class="error-text">Required field</div>
                 </div>
 
-                <h3 class="section-title" style="margin-top: 50px;">Payment</h3>
+                <h3 class="section-title" style="margin-top: 50px;">Payment Method</h3>
                 <div class="pay-option active" id="cod-box" onclick="setPayment('cod')">
                     <span>CASH ON DELIVERY</span>
                     <span class="dot filled" id="cod-dot"></span>
                 </div>
                 <div class="pay-option" id="gcash-box" onclick="setPayment('gcash')">
-                    <span>GCASH INSTANT VERIFY</span>
+                    <span>GCASH (MANUAL VERIFY)</span>
                     <span class="dot" id="gcash-dot"></span>
                 </div>
 
                 <div id="gcash-verification">
-                    <p style="font-size: 10px; font-weight: 700; margin-bottom: 20px; color: #555;">SEND PAYMENT TO: 0912 345 6789</p>
+                    <p style="font-size: 10px; font-weight: 700; margin-bottom: 20px; color: #555;">GCASH NAME: APPAREL STORE ADMIN<br>NUMBER: 0912 345 6789</p>
                     <div class="input-box">
                         <label>REFERENCE NUMBER (LAST 4 DIGITS)</label>
-                        <input type="text" id="gcash-ref" class="form-input" placeholder="0000" maxlength="4" oninput="this.value = this.value.replace(/[^0-9]/g, '')">
-                        <div class="error-text">Reference number is required.</div>
+                        <input type="text" id="gcash-ref" class="form-input" placeholder="0000" maxlength="4">
+                        <div class="error-text">Last 4 digits required</div>
                     </div>
                 </div>
             </form>
@@ -153,19 +155,27 @@ $subtotal = 0;
 
         <aside>
             <div class="summary-sticky">
-                <h3 class="section-title">Summary</h3>
-                <?php while($item = mysqli_fetch_assoc($cart_items)): 
-                    $price = $item['price'] * $item['quantity'];
-                    $subtotal += $price;
+                <h3 class="section-title">Order Summary</h3>
+                <?php 
+                mysqli_data_seek($cart_items, 0); // Reset pointer
+                while($item = mysqli_fetch_assoc($cart_items)): 
+                    $item_total = $item['price'] * $item['quantity'];
+                    $subtotal += $item_total;
                 ?>
-                <div class="summary-row"><span><?= $item['name'] ?> (x<?= $item['quantity'] ?>)</span><span style="font-weight: 700;">₱<?= number_format($price, 2) ?></span></div>
+                <div class="summary-row">
+                    <span><?= htmlspecialchars($item['name']) ?> (<?= $item['size'] ?>) x<?= $item['quantity'] ?></span>
+                    <span style="font-weight: 700;">₱<?= number_format($item_total, 2) ?></span>
+                </div>
                 <?php endwhile; ?>
 
                 <div style="border-top: 1px solid #eee; padding-top: 20px; margin-top: 20px;">
-                    <div class="summary-row"><span>SHIPPING</span><span>₱<?= number_format($shipping_fee, 2) ?></span></div>
-                    <div class="summary-row" style="font-size: 16px; font-weight: 800; margin-top: 15px;"><span>TOTAL</span><span>₱<?= number_format($subtotal + $shipping_fee, 2) ?></span></div>
+                    <div class="summary-row" style="color: #888;"><span>SUBTOTAL</span><span>₱<?= number_format($subtotal, 2) ?></span></div>
+                    <div class="summary-row" style="color: #888;"><span>SHIPPING</span><span>₱<?= number_format($shipping_fee, 2) ?></span></div>
+                    <div class="summary-row" style="font-size: 18px; font-weight: 900; margin-top: 15px; border-top: 2px solid #000; padding-top: 15px;">
+                        <span>TOTAL</span><span>₱<?= number_format($subtotal + $shipping_fee, 2) ?></span>
+                    </div>
                 </div>
-                <button type="button" class="btn-save" onclick="handleOrder()" style="width: 100%; margin-top: 40px; height: 50px; font-size: 11px;">PLACE ORDER</button>
+                <button type="button" class="btn-save" onclick="handleOrder()" style="width: 100%; margin-top: 40px; height: 55px; font-size: 11px; background: #000; color: #fff; border: none; font-weight: 800; cursor: pointer; letter-spacing: 2px;">PLACE ORDER</button>
             </div>
         </aside>
     </div>
@@ -185,23 +195,23 @@ $subtotal = 0;
 
     function handleOrder() {
         let isValid = true;
+        
+        // Reset errors
         document.querySelectorAll('.error-text').forEach(e => e.style.display = 'none');
         document.querySelectorAll('.form-input').forEach(i => i.classList.remove('invalid'));
 
-        // Basic Check
+        // Validate Inputs
         ['fname', 'lname', 'address'].forEach(id => {
             const el = document.getElementById(id);
             if(!el.value.trim()){ el.nextElementSibling.style.display = 'block'; el.classList.add('invalid'); isValid = false; }
         });
 
-        // Phone Validation
         const ph = document.getElementById('phone');
         if (ph.value.length !== 11 || !ph.value.startsWith('09')) {
             document.getElementById('phone-error').style.display = 'block';
             ph.classList.add('invalid'); isValid = false;
         }
 
-        // GCash Validation
         if(selectedMethod === 'gcash') {
             const ref = document.getElementById('gcash-ref');
             if(ref.value.length < 4) { ref.nextElementSibling.style.display = 'block'; ref.classList.add('invalid'); isValid = false; }
@@ -212,8 +222,8 @@ $subtotal = 0;
             
             const formData = new FormData();
             formData.append('full_name', document.getElementById('fname').value + ' ' + document.getElementById('lname').value);
-            formData.append('address', document.getElementById('address').value + ' | Phone: ' + document.getElementById('phone').value);
-            formData.append('total_amount', '<?= $subtotal + $shipping_fee ?>');
+            formData.append('address', document.getElementById('address').value);
+            formData.append('phone', document.getElementById('phone').value);
             formData.append('payment_method', selectedMethod.toUpperCase() + (selectedMethod === 'gcash' ? ' (Ref: ' + document.getElementById('gcash-ref').value + ')' : ''));
 
             fetch('process_order.php', { method: 'POST', body: formData })
@@ -224,7 +234,15 @@ $subtotal = 0;
                         document.getElementById('loadingUI').style.display = 'none';
                         document.getElementById('successUI').style.display = 'block';
                     }, 2000);
+                } else {
+                    alert("Order Failed: " + data);
+                    document.getElementById('processOverlay').style.display = 'none';
                 }
+            })
+            .catch(err => {
+                console.error(err);
+                alert("Connection Error.");
+                document.getElementById('processOverlay').style.display = 'none';
             });
         }
     }

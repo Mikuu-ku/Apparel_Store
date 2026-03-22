@@ -9,9 +9,9 @@ if (!isset($_SESSION['user_id'])) {
 }
 
 $user_id = $_SESSION['user_id'];
-$v = "2.1";
+$v = "2.2"; // Incremented version for CSS refresh
 
-// Fetch User Info for Header (Syncing with first_name column)
+// Fetch User Info for Header
 $user_query = mysqli_query($conn, "SELECT first_name FROM users WHERE id = $user_id");
 $user_data = mysqli_fetch_assoc($user_query);
 $display_name = $user_data['first_name'] ?? 'USER';
@@ -38,6 +38,33 @@ $orders_result = mysqli_query($conn, $orders_query);
     <link rel="stylesheet" href="assets/css/style.css?v=<?php echo $v; ?>">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    <style>
+        /* Small addition for the Cancel Button */
+        .btn-cancel-order {
+            background: transparent;
+            border: 1px solid #ddd;
+            color: #ff4444;
+            padding: 8px 15px;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            cursor: pointer;
+            transition: 0.3s;
+            margin-right: 10px;
+        }
+        .btn-cancel-order:hover {
+            background: #ff4444;
+            color: #fff;
+            border-color: #ff4444;
+        }
+        .status-badge {
+            font-size: 10px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+    </style>
 </head>
 <body>
 
@@ -95,12 +122,14 @@ $orders_result = mysqli_query($conn, $orders_query);
                 </thead>
                 <tbody>
                     <?php while($order = mysqli_fetch_assoc($orders_result)): 
-                        $total = $order['total_price'] ?? ($order['amount'] ?? 0);
+                        // Using total_amount to match your checkout logic
+                        $total = $order['total_amount'] ?? ($order['total_price'] ?? 0);
                         $status = $order['status'] ?? 'Pending';
+                        $order_id = $order['id'];
                     ?>
                     <tr>
                         <td class="order-id-cell">
-                            #<?php echo str_pad($order['id'], 6, '0', STR_PAD_LEFT); ?>
+                            #<?php echo str_pad($order_id, 6, '0', STR_PAD_LEFT); ?>
                         </td>
                         <td>
                             <?php echo date("M d, Y", strtotime($order['created_at'])); ?>
@@ -109,12 +138,18 @@ $orders_result = mysqli_query($conn, $orders_query);
                             ₱<?php echo number_format($total, 2); ?>
                         </td>
                         <td>
-                            <span class="status-badge">
+                            <span class="status-badge" style="color: <?= ($status == 'Cancelled') ? '#ff4444' : '#000'; ?>">
                                 <?php echo htmlspecialchars($status); ?>
                             </span>
                         </td>
                         <td style="text-align: right;">
-                            <button onclick="viewOrderDetails(<?php echo $order['id']; ?>)" class="btn-view-details">
+                            <?php if ($status === 'Pending'): ?>
+                                <button onclick="cancelOrder(<?= $order_id ?>)" class="btn-cancel-order">
+                                    Cancel
+                                </button>
+                            <?php endif; ?>
+                            
+                            <button onclick="viewOrderDetails(<?php echo $order_id; ?>)" class="btn-view-details">
                                 View Details
                             </button>
                         </td>
@@ -135,8 +170,7 @@ $orders_result = mysqli_query($conn, $orders_query);
 <div id="orderModal" class="order-modal">
     <div class="order-modal-content">
         <span class="close-order-modal" onclick="closeOrderModal()">&times;</span>
-        <div id="orderDetailsBody">
-            </div>
+        <div id="orderDetailsBody"></div>
     </div>
 </div>
 
@@ -150,23 +184,35 @@ $orders_result = mysqli_query($conn, $orders_query);
 function viewOrderDetails(orderId) {
     const modal = document.getElementById('orderModal');
     const body = document.getElementById('orderDetailsBody');
-    
     modal.style.display = "block";
-    
-    body.innerHTML = '<div class="loader"><i class="fas fa-spinner fa-spin"></i> LOADING DETAILS...</div>';
+    body.innerHTML = '<div class="loader" style="text-align:center; padding:20px;"><i class="fas fa-spinner fa-spin"></i> LOADING DETAILS...</div>';
 
     fetch('fetch_order_details.php?id=' + orderId)
-        .then(response => {
-            if (!response.ok) throw new Error('Network response was not ok');
-            return response.text();
-        })
-        .then(data => {
-            body.innerHTML = data;
-        })
+        .then(response => response.text())
+        .then(data => { body.innerHTML = data; })
         .catch(err => {
-            body.innerHTML = '<p style="color:red; text-align:center; padding: 20px;">Error loading order details. Please try again.</p>';
-            console.error('Fetch error:', err);
+            body.innerHTML = '<p style="color:red; text-align:center; padding: 20px;">Error loading order details.</p>';
         });
+}
+
+function cancelOrder(id) {
+    if (confirm("Are you sure you want to cancel Order #" + id + "? This will restore the stock items.")) {
+        const formData = new FormData();
+        formData.append('order_id', id);
+
+        fetch('cancel_order.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(res => res.text())
+        .then(data => {
+            if (data.trim() === "success") {
+                location.reload();
+            } else {
+                alert("Cancellation failed: " + data);
+            }
+        });
+    }
 }
 
 function closeOrderModal() {
@@ -175,9 +221,7 @@ function closeOrderModal() {
 
 window.onclick = function(event) {
     const modal = document.getElementById('orderModal');
-    if (event.target == modal) {
-        closeOrderModal();
-    }
+    if (event.target == modal) { closeOrderModal(); }
 }
 </script>
 

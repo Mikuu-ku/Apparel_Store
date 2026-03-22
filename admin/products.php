@@ -12,8 +12,8 @@ if (!isset($_SESSION['user_id']) || $_SESSION['role'] !== 'admin') {
 if (isset($_POST['add'])) {
     $name = mysqli_real_escape_string($conn, $_POST['name']);
     $desc = mysqli_real_escape_string($conn, $_POST['desc']);
+    $category = mysqli_real_escape_string($conn, $_POST['category']);
     $price = $_POST['price'];
-    $size = mysqli_real_escape_string($conn, $_POST['size']);
     $color = mysqli_real_escape_string($conn, $_POST['color']);
     
     $stock_s = (int)$_POST['stock_s'];
@@ -21,8 +21,9 @@ if (isset($_POST['add'])) {
     $stock_l = (int)$_POST['stock_l'];
     $stock_xl = (int)$_POST['stock_xl'];
 
-    $query = "INSERT INTO products (name, description, price, size, color, stock_s, stock_m, stock_l, stock_xl) 
-              VALUES ('$name', '$desc', '$price', '$size', '$color', '$stock_s', '$stock_m', '$stock_l', '$stock_xl')";
+    // Ensure your DB table has 'category' column
+    $query = "INSERT INTO products (name, description, category, price, color, stock_s, stock_m, stock_l, stock_xl) 
+              VALUES ('$name', '$desc', '$category', '$price', '$color', '$stock_s', '$stock_m', '$stock_l', '$stock_xl')";
     
     if(mysqli_query($conn, $query)) {
         header("Location: products.php?msg=Product Added Successfully");
@@ -35,8 +36,8 @@ if (isset($_POST['update'])) {
     $id = $_POST['id'];
     $name = mysqli_real_escape_string($conn, $_POST['name']);
     $desc = mysqli_real_escape_string($conn, $_POST['desc']);
+    $category = mysqli_real_escape_string($conn, $_POST['category']);
     $price = $_POST['price'];
-    $size = mysqli_real_escape_string($conn, $_POST['size']);
     $color = mysqli_real_escape_string($conn, $_POST['color']);
     
     $stock_s = (int)$_POST['stock_s'];
@@ -45,7 +46,7 @@ if (isset($_POST['update'])) {
     $stock_xl = (int)$_POST['stock_xl'];
 
     $query = "UPDATE products SET 
-              name='$name', description='$desc', price='$price', size='$size', color='$color', 
+              name='$name', description='$desc', category='$category', price='$price', color='$color', 
               stock_s='$stock_s', stock_m='$stock_m', stock_l='$stock_l', stock_xl='$stock_xl' 
               WHERE id=$id";
     
@@ -63,7 +64,7 @@ $products = mysqli_query($conn, "SELECT * FROM products ORDER BY id DESC");
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventory | Apparel Admin</title>
+    <title>Products | Apparel Admin</title>
     <link rel="icon" type="image/jpeg" href="../assets/images/new_logo.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
@@ -82,53 +83,46 @@ $products = mysqli_query($conn, "SELECT * FROM products ORDER BY id DESC");
         /* Main Workspace */
         .admin-container { 
             margin-left: 250px; 
-            padding: 60px 80px; 
+            padding: 40px 50px; 
             width: calc(100% - 250px); 
-            display: grid; 
-            grid-template-columns: 380px 1fr; 
-            gap: 50px; 
+            display: flex;
+            flex-direction: column;
+            gap: 30px; 
             box-sizing: border-box; 
         }
         
-        .form-card, .inventory-card { background: #fff; padding: 40px; border: 1px solid #f0f0f0; }
-        h3 { margin-top: 0; text-transform: uppercase; font-size: 13px; letter-spacing: 2px; margin-bottom: 30px; font-weight: 700; }
+        .form-card, .inventory-card { background: #fff; padding: 30px; border: 1px solid #f0f0f0; }
+        h3 { margin-top: 0; text-transform: uppercase; font-size: 12px; letter-spacing: 2px; margin-bottom: 20px; font-weight: 700; color: #000; }
         
-        /* Form Inputs */
-        label { font-size: 9px; text-transform: uppercase; font-weight: 700; color: #aaa; letter-spacing: 1px; display: block; margin-bottom: 8px; }
-        input, textarea { width: 100%; padding: 14px; margin-bottom: 20px; border: 1px solid #eee; box-sizing: border-box; font-family: inherit; font-size: 13px; outline: none; transition: 0.3s; }
-        input:focus, textarea:focus { border-color: #000; }
+        /* Compact Grid Layout */
+        .compact-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 15px; margin-bottom: 5px; }
+        .input-group { margin-bottom: 15px; }
         
-        .stock-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 10px; }
-        .stock-grid div { display: flex; flex-direction: column; }
-        .stock-grid input { margin-bottom: 0; padding: 10px; }
+        label { font-size: 9px; text-transform: uppercase; font-weight: 700; color: #aaa; letter-spacing: 1px; display: block; margin-bottom: 5px; }
+        input, textarea, select { width: 100%; padding: 12px; border: 1px solid #eee; box-sizing: border-box; font-family: inherit; font-size: 12px; outline: none; transition: 0.3s; background: #fafafa; }
+        input:focus { border-color: #000; background: #fff; }
+        
+        /* Validation Styles */
+        .input-error { border: 1px solid #ff0000 !important; background: #fff5f5 !important; }
+        .field-error { color: #ff0000; font-size: 8px; font-weight: 700; text-transform: uppercase; margin-top: 4px; display: none; letter-spacing: 0.5px; }
 
-        .btn-black { width: 100%; padding: 18px; background: #000; color: #fff; border: 1px solid #000; cursor: pointer; text-transform: uppercase; font-weight: 700; font-size: 11px; letter-spacing: 2px; transition: 0.3s; margin-top: 10px; }
+        .stock-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+        .stock-row div { position: relative; }
+
+        .btn-black { padding: 15px 30px; background: #000; color: #fff; border: 1px solid #000; cursor: pointer; text-transform: uppercase; font-weight: 700; font-size: 11px; letter-spacing: 2px; transition: 0.3s; }
         .btn-black:hover { background: #fff; color: #000; }
 
         /* Inventory Table */
-        table { width: 100%; border-collapse: collapse; }
-        th { text-align: left; padding: 20px; background: #fafafa; border-bottom: 1px solid #eee; text-transform: uppercase; font-size: 10px; letter-spacing: 1.5px; color: #888; }
-        td { padding: 20px; border-bottom: 1px solid #f9f9f9; font-size: 13px; vertical-align: middle; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th { text-align: left; padding: 15px; background: #fafafa; border-bottom: 1px solid #eee; text-transform: uppercase; font-size: 9px; letter-spacing: 1.5px; color: #888; }
+        td { padding: 15px; border-bottom: 1px solid #f9f9f9; font-size: 12px; }
 
-        /* Dropdown Actions */
-        .dropdown { position: relative; display: inline-block; }
-        .dropbtn { background: none; border: 1px solid #eee; padding: 10px 14px; cursor: pointer; font-size: 12px; transition: 0.2s; color: #888; }
-        .dropbtn:hover { border-color: #000; color: #000; }
-        .dropdown-content { display: none; position: absolute; right: 0; background-color: #fff; min-width: 150px; box-shadow: 0px 10px 30px rgba(0,0,0,0.08); z-index: 10; border: 1px solid #f0f0f0; }
-        .dropdown-content a { color: #111; padding: 15px 20px; text-decoration: none; display: block; font-size: 10px; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; transition: 0.2s; }
-        .dropdown-content a:hover { background-color: #000; color: #fff; }
-        .dropdown:hover .dropdown-content { display: block; }
-        .delete-opt { color: #ff4444 !important; }
-        .delete-opt:hover { background-color: #ff4444 !important; color: #fff !important; }
+        /* Modal */
+        .modal { display: none; position: fixed; z-index: 2000; inset: 0; background: rgba(0,0,0,0.6); backdrop-filter: blur(3px); }
+        .modal-content { background: #fff; margin: 5vh auto; padding: 40px; width: 600px; position: relative; }
+        .close-btn { position: absolute; right: 20px; top: 15px; font-size: 20px; cursor: pointer; color: #ccc; }
 
-        /* Modal Overlay */
-        .modal { display: none; position: fixed; z-index: 2000; inset: 0; background: rgba(255,255,255,0.9); backdrop-filter: blur(5px); }
-        .modal-content { background: #fff; margin: 4vh auto; padding: 50px; width: 450px; border: 1px solid #000; position: relative; box-shadow: 0 20px 60px rgba(0,0,0,0.1); }
-        .close-btn { position: absolute; right: 25px; top: 20px; font-size: 24px; cursor: pointer; color: #aaa; transition: 0.3s; }
-        .close-btn:hover { color: #000; }
-
-        /* Success Message Alert */
-        .alert { position: fixed; top: 20px; right: 20px; background: #000; color: #fff; padding: 15px 30px; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; z-index: 3000; display: <?php echo isset($_GET['msg']) ? 'block' : 'none'; ?>; }
+        .alert { position: fixed; top: 20px; right: 20px; background: #000; color: #fff; padding: 15px 30px; font-size: 11px; text-transform: uppercase; letter-spacing: 2px; z-index: 3000; }
     </style>
 </head>
 <body>
@@ -149,37 +143,59 @@ $products = mysqli_query($conn, "SELECT * FROM products ORDER BY id DESC");
     </div>
 
     <div class="admin-container">
+        
         <div class="form-card">
-            <h3>Register Apparel</h3>
-            <form method="POST">
-                <label>Product Name</label>
-                <input name="name" placeholder="e.g. Oversized Heavy Tee" required>
-                
-                <label>Description</label>
-                <textarea name="desc" placeholder="Details about the garment..." rows="3"></textarea>
-                
-                <label>Unit Price</label>
-                <input name="price" type="number" step="0.01" placeholder="₱ 0.00" required>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div>
-                        <label>Sizes</label>
-                        <input name="size" placeholder="S, M, L, XL">
+            <h3>Register New Apparel</h3>
+            <form method="POST" id="addForm" novalidate>
+                <div class="compact-row">
+                    <div class="input-group">
+                        <label>Product Name</label>
+                        <input name="name" id="add_name" placeholder="Name">
+                        <span class="field-error" id="err_add_name">Required</span>
                     </div>
-                    <div>
+                    <div class="input-group">
+                        <label>Category</label>
+                        <select name="category" id="add_category">
+                            <option value="">Select Category</option>
+                            <option value="Tops">Tops</option>
+                            <option value="Bottoms">Bottoms</option>
+                            <option value="Essentials">Hoodies</option>
+                        </select>
+                        <span class="field-error" id="err_add_category">Required</span>
+                    </div>
+                    <div class="input-group">
+                        <label>Unit Price</label>
+                        <input name="price" id="add_price" type="number" step="0.01" placeholder="0.00">
+                        <span class="field-error" id="err_add_price">Required</span>
+                    </div>
+                </div>
+
+                <div class="compact-row">
+                    <div class="input-group">
                         <label>Color</label>
-                        <input name="color" placeholder="Pitch Black">
+                        <input name="color" id="add_color" placeholder="e.g. Black">
+                        <span class="field-error" id="err_add_color">Required</span>
+                    </div>
+                    <div class="input-group" style="grid-column: span 2;">
+                        <label>Stock (S | M | L | XL)</label>
+                        <div class="stock-row">
+                            <input name="stock_s" id="add_s" type="number" value="0">
+                            <input name="stock_m" id="add_m" type="number" value="0">
+                            <input name="stock_l" id="add_l" type="number" value="0">
+                            <input name="stock_xl" id="add_xl" type="number" value="0">
+                        </div>
                     </div>
                 </div>
-                
-                <label>Stock Distribution</label>
-                <div class="stock-grid">
-                    <div><input name="stock_s" type="number" placeholder="S" value="0"></div>
-                    <div><input name="stock_m" type="number" placeholder="M" value="0"></div>
-                    <div><input name="stock_l" type="number" placeholder="L" value="0"></div>
-                    <div><input name="stock_xl" type="number" placeholder="XL" value="0"></div>
+
+                <div class="input-group">
+                    <label>Description</label>
+                    <textarea name="desc" id="add_desc" rows="2" placeholder="Product details..."></textarea>
+                    <span class="field-error" id="err_add_desc">Required</span>
                 </div>
-                <button type="submit" name="add" class="btn-black">Add to Inventory</button>
+
+                <div style="text-align: right;">
+                    <button type="submit" name="add" class="btn-black">Add to Inventory</button>
+                </div>
             </form>
         </div>
 
@@ -188,34 +204,27 @@ $products = mysqli_query($conn, "SELECT * FROM products ORDER BY id DESC");
             <table>
                 <thead>
                     <tr>
-                        <th>Item Details</th>
+                        <th>Details</th>
+                        <th>Category</th>
                         <th>Price</th>
-                        <th>Stock Levels</th>
-                        <th style="text-align: right;">Manage</th>
+                        <th>Stocks</th>
+                        <th style="text-align: right;">Action</th>
                     </tr>
                 </thead>
                 <tbody>
                     <?php while($row = mysqli_fetch_assoc($products)): ?>
                     <tr>
                         <td>
-                            <span style="display: block; font-weight: 700; font-size: 14px; text-transform: uppercase;"><?php echo htmlspecialchars($row['name']); ?></span>
-                            <span style="font-size: 10px; color: #aaa; text-transform: uppercase; letter-spacing: 1px;"><?php echo htmlspecialchars($row['color']); ?></span>
+                            <b style="text-transform: uppercase;"><?php echo $row['name']; ?></b><br>
+                            <small style="color:#888"><?php echo $row['color']; ?></small>
                         </td>
-                        <td style="font-weight: 700;">₱<?php echo number_format($row['price'], 2); ?></td>
-                        <td>
-                            <div style="font-family: monospace; font-size: 11px; color: #666;">
-                                S:<?php echo $row['stock_s']; ?> | M:<?php echo $row['stock_m']; ?><br>
-                                L:<?php echo $row['stock_l']; ?> | XL:<?php echo $row['stock_xl']; ?>
-                            </div>
+                        <td><?php echo $row['category']; ?></td>
+                        <td>₱<?php echo number_format($row['price'], 2); ?></td>
+                        <td style="font-family: monospace; font-size: 11px;">
+                            S:<?php echo $row['stock_s']; ?> M:<?php echo $row['stock_m']; ?> L:<?php echo $row['stock_l']; ?> XL:<?php echo $row['stock_xl']; ?>
                         </td>
                         <td style="text-align: right;">
-                            <div class="dropdown">
-                                <button class="dropbtn"><i class="fas fa-ellipsis-h"></i></button>
-                                <div class="dropdown-content">
-                                    <a href="javascript:void(0)" onclick='openEditModal(<?php echo json_encode($row); ?>)'>Edit Product</a>
-                                    <a href="delete_product.php?id=<?php echo $row['id']; ?>" class="delete-opt" onclick="return confirm('Remove this product from active inventory?')">Delete</a>
-                                </div>
-                            </div>
+                            <button class="btn-black" style="padding: 5px 12px; font-size: 9px;" onclick='openEditModal(<?php echo json_encode($row); ?>)'>Edit</button>
                         </td>
                     </tr>
                     <?php endwhile; ?>
@@ -227,51 +236,82 @@ $products = mysqli_query($conn, "SELECT * FROM products ORDER BY id DESC");
     <div id="editModal" class="modal">
         <div class="modal-content">
             <span class="close-btn" onclick="closeModal()">&times;</span>
-            <h3 style="margin-bottom: 30px;">Update Details</h3>
-            <form method="POST">
+            <h3>Update Product</h3>
+            <form method="POST" id="editForm" novalidate>
                 <input type="hidden" name="id" id="edit-id">
-                <label>Product Name</label>
-                <input name="name" id="edit-name" required>
-                
-                <label>Description</label>
-                <textarea name="desc" id="edit-desc" rows="3"></textarea>
-                
-                <label>Price</label>
-                <input name="price" id="edit-price" type="number" step="0.01" required>
-                
-                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 15px;">
-                    <div><label>Sizes</label><input name="size" id="edit-size"></div>
-                    <div><label>Color</label><input name="color" id="edit-color"></div>
+                <div class="compact-row">
+                    <div class="input-group">
+                        <label>Product Name</label>
+                        <input name="name" id="edit-name">
+                        <span class="field-error" id="err_edit_name">Required</span>
+                    </div>
+                    <div class="input-group">
+                        <label>Category</label>
+                        <select name="category" id="edit-category">
+                            <option value="Tops">Tops</option>
+                            <option value="Bottoms">Bottoms</option>
+                            <option value="Essentials">Hoodies</option>
+                        </select>
+                    </div>
+                    <div class="input-group">
+                        <label>Price</label>
+                        <input name="price" id="edit-price" type="number" step="0.01">
+                        <span class="field-error" id="err_edit_price">Required</span>
+                    </div>
                 </div>
-                
-                <label>Stock Correction</label>
-                <div class="stock-grid">
-                    <div><input name="stock_s" id="edit-stock-s" type="number"></div>
-                    <div><input name="stock_m" id="edit-stock-m" type="number"></div>
-                    <div><input name="stock_l" id="edit-stock-l" type="number"></div>
-                    <div><input name="stock_xl" id="edit-stock-xl" type="number"></div>
+                <div class="input-group">
+                    <label>Stocks (S | M | L | XL)</label>
+                    <div class="stock-row">
+                        <input name="stock_s" id="edit-s" type="number">
+                        <input name="stock_m" id="edit-m" type="number">
+                        <input name="stock_l" id="edit-l" type="number">
+                        <input name="stock_xl" id="edit-xl" type="number">
+                    </div>
                 </div>
-                <button type="submit" name="update" class="btn-black">Commit Changes</button>
+                <button type="submit" name="update" class="btn-black" style="width:100%">Commit Changes</button>
             </form>
         </div>
     </div>
 
     <script>
-        function openEditModal(product) {
-            document.getElementById('edit-id').value = product.id;
-            document.getElementById('edit-name').value = product.name;
-            document.getElementById('edit-desc').value = product.description;
-            document.getElementById('edit-price').value = product.price;
-            document.getElementById('edit-size').value = product.size;
-            document.getElementById('edit-color').value = product.color;
-            document.getElementById('edit-stock-s').value = product.stock_s;
-            document.getElementById('edit-stock-m').value = product.stock_m;
-            document.getElementById('edit-stock-l').value = product.stock_l;
-            document.getElementById('edit-stock-xl').value = product.stock_xl;
+        function validate(formId, prefix) {
+            const form = document.getElementById(formId);
+            let isValid = true;
+            const fields = ['name', 'category', 'price', 'color', 'desc'];
+            
+            fields.forEach(f => {
+                const el = document.getElementById(prefix + f);
+                const err = document.getElementById('err_' + prefix + f);
+                if (el && !el.value.trim()) {
+                    el.classList.add('input-error');
+                    if (err) err.style.display = 'block';
+                    isValid = false;
+                } else if (el) {
+                    el.classList.remove('input-error');
+                    if (err) err.style.display = 'none';
+                }
+            });
+            return isValid;
+        }
+
+        document.getElementById('addForm').onsubmit = function(e) {
+            if (!validate('addForm', 'add_')) e.preventDefault();
+        };
+
+        function openEditModal(p) {
+            document.getElementById('edit-id').value = p.id;
+            document.getElementById('edit-name').value = p.name;
+            document.getElementById('edit-category').value = p.category;
+            document.getElementById('edit-price').value = p.price;
+            document.getElementById('edit-s').value = p.stock_s;
+            document.getElementById('edit-m').value = p.stock_m;
+            document.getElementById('edit-l').value = p.stock_l;
+            document.getElementById('edit-xl').value = p.stock_xl;
             document.getElementById('editModal').style.display = 'block';
         }
+
         function closeModal() { document.getElementById('editModal').style.display = 'none'; }
-        window.onclick = function(e) { if (e.target.className == 'modal') closeModal(); }
+        window.onclick = e => { if(e.target.className == 'modal') closeModal(); }
     </script>
 </body>
 </html>

@@ -2,12 +2,11 @@
 session_start();
 include "config/database.php";
 
-if (isset($_SESSION['role']) && $_SESSION['role'] === 'admin') {
-    header("Location: admin/dashboard.php");
-    exit;
-}
+// REVISED ADMIN LOGIC: 
+// Removed the header redirect so admins can actually see the store.
+$is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
 
-$v = time(); // Changed to time() to force CSS/JS refresh during development
+$v = time(); 
 
 $display_name = "USER";
 if (isset($_SESSION['user_id'])) {
@@ -27,7 +26,6 @@ if ($category != '') {
     $query_str .= " WHERE category = '$category'"; 
 }
 $query_str .= " ORDER BY id DESC";
-// Force fresh data from DB
 $products = mysqli_query($conn, $query_str);
 
 $cart_count = 0;
@@ -49,8 +47,51 @@ if (isset($_SESSION['user_id'])) {
     <link rel="stylesheet" href="assets/css/style.css?v=<?php echo $v; ?>">
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+    
+    <style>
+        /* Admin Bar Styles */
+        .admin-top-bar {
+            background: #000;
+            color: #fff;
+            padding: 10px 50px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-family: 'Roboto', sans-serif;
+            font-size: 11px;
+            letter-spacing: 1px;
+            position: sticky;
+            top: 0;
+            z-index: 10000;
+            border-bottom: 1px solid #333;
+        }
+        .admin-top-bar a {
+            color: #fff;
+            text-decoration: none;
+            margin-left: 20px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+        .admin-top-bar a:hover { color: #aaa; }
+        .admin-tag { background: #fff; color: #000; padding: 2px 8px; font-weight: 900; margin-right: 10px; }
+    </style>
 </head>
 <body>
+
+<?php if ($is_admin): ?>
+<div class="admin-top-bar">
+    <div>
+        <span class="admin-tag">ADMIN MODE</span>
+        <span>Viewing live site as Administrator</span>
+    </div>
+    <div>
+        <a href="admin/dashboard.php"><i class="fas fa-chart-line"></i> Dashboard</a>
+        <a href="admin/products.php"><i class="fas fa-tshirt"></i> Inventory</a>
+        <a href="admin/orders.php"><i class="fas fa-shopping-bag"></i> Orders</a>
+        <a href="logout.php" style="color: #ff4444;">Logout</a>
+    </div>
+</div>
+<?php endif; ?>
 
 <header class="header">
     <div class="container header-container">
@@ -233,13 +274,11 @@ if (isset($_SESSION['user_id'])) {
 </div>
 
 <script>
-// --- UI Elements ---
 const searchBtn = document.getElementById('searchBtn');
 const searchInput = document.getElementById('searchInput');
 const resultsPopup = document.getElementById('searchResultsPopup');
 const quickViewModal = document.getElementById('quickViewModal');
 
-// --- 1. Search Bar Logic ---
 if (searchBtn && searchInput) {
     searchBtn.addEventListener('click', (e) => {
         e.preventDefault();
@@ -253,7 +292,6 @@ if (searchBtn && searchInput) {
     });
 }
 
-// Live Search Input
 if (searchInput) {
     searchInput.addEventListener('input', function() {
         const query = this.value.trim();
@@ -270,25 +308,18 @@ if (searchInput) {
     });
 }
 
-// --- 2. Product Quick View Logic ---
 function handleQuickView(input) {
-    // Prevent errors if modal doesn't exist
     if (!quickViewModal) return;
-
-    // Fix: Close search bar automatically if it's open
     if (searchInput) searchInput.classList.remove('active');
     if (resultsPopup) resultsPopup.style.display = 'none';
 
-    // Get Data from Product Card
     const data = input.dataset;
     
-    // Reset Size Selection
     document.querySelectorAll('.size-item input[type="radio"]').forEach(r => {
         r.checked = false;
         r.disabled = false;
     });
 
-    // Populate Modal Content
     document.getElementById('modalName').innerText = data.name;
     document.getElementById('modalPrice').innerText = '₱' + parseFloat(data.price).toLocaleString(undefined, {minimumFractionDigits: 2});
     document.getElementById('modalDesc').innerText = data.desc;
@@ -296,7 +327,6 @@ function handleQuickView(input) {
     document.getElementById('modalId').value = data.id;
     document.getElementById('modalQtyInput').value = 1;
 
-    // Stock Management Logic
     const sizes = ['s', 'm', 'l', 'xl'];
     sizes.forEach(size => {
         const stock = parseInt(data[size]);
@@ -334,11 +364,11 @@ function closeModal() {
 }
 
 window.onclick = function(event) {
-    if (event.target == quickViewModal) {
-        closeModal();
-    }
+    if (event.target == quickViewModal) { closeModal(); }
     if (resultsPopup && !event.target.closest('.search-wrapper')) {
         resultsPopup.style.display = 'none';
     }
 }
 </script>
+</body>
+</html>

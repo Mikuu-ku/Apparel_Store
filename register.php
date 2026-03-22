@@ -1,41 +1,30 @@
 <?php
+session_start();
 include "config/database.php";
 
-$success = false; 
 $error = "";
+$success = false;
 
-if (isset($_POST['register'])) {
-    $fname = mysqli_real_escape_string($conn, $_POST['first_name']);
-    $lname = mysqli_real_escape_string($conn, $_POST['last_name']);
-    $email = mysqli_real_escape_string($conn, trim($_POST['email']));
-    $pass  = $_POST['password'];
-    $confirm_pass = $_POST['confirm_password'];
-    $contact = mysqli_real_escape_string($conn, $_POST['contact_no']);
+if ($_SERVER["REQUEST_METHOD"] == "POST") {
+    $first_name = mysqli_real_escape_string($conn, $_POST['first_name']);
+    $last_name  = mysqli_real_escape_string($conn, $_POST['last_name']);
+    $email      = mysqli_real_escape_string($conn, $_POST['email']);
+    $password   = $_POST['password'];
+    $confirm_p  = $_POST['confirm_password'];
 
-    $check_email = mysqli_query($conn, "SELECT email FROM users WHERE email = '$email'");
-
+    // Server-side check if email exists
+    $check_email = mysqli_query($conn, "SELECT id FROM users WHERE email = '$email'");
     if (mysqli_num_rows($check_email) > 0) {
-        $error = "THIS EMAIL IS ALREADY REGISTERED!";
-    } 
-    else if ($pass !== $confirm_pass) {
-        $error = "PASSWORDS DO NOT MATCH!";
-    } 
-    else if (!filter_var($email, FILTER_VALIDATE_EMAIL)) { 
-        $error = "PLEASE ENTER A VALID EMAIL ADDRESS!";
-    }
-    else if (!preg_match("/^09\d{9}$/", $contact)) {
-        $error = "CONTACT NUMBER MUST BE 11 DIGITS STARTING WITH 09";
-    } 
-    else {
-        $hashed_pass = password_hash($pass, PASSWORD_DEFAULT);
-        $sql = "INSERT INTO users (first_name, last_name, email, password, contact_no, role)
-                VALUES ('$fname','$lname','$email','$hashed_pass','$contact', 'user')";
-
-        if (mysqli_query($conn, $sql)) {
+        $error = "Email is already registered.";
+    } else {
+        $hashed_password = password_hash($password, PASSWORD_DEFAULT);
+        $query = "INSERT INTO users (first_name, last_name, email, password, role) 
+                  VALUES ('$first_name', '$last_name', '$email', '$hashed_password', 'user')";
+        
+        if (mysqli_query($conn, $query)) {
             $success = true;
-            header("Refresh: 2; url=login.php?msg=registered");
         } else {
-            $error = "ERROR: " . mysqli_error($conn);
+            $error = "Registration failed. Please try again.";
         }
     }
 }
@@ -47,144 +36,157 @@ if (isset($_POST['register'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register | Apparel's Clothing Line</title>
+    <link rel="stylesheet" href="assets/css/style.css?v=<?php echo time(); ?>">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-    <link rel="stylesheet" href="assets/css/style.css"> 
-    <link rel="icon" type="image/png" href="assets/images/new_logo.jpg">
+    <style>
+        /* Ensuring our error styles from your CSS are forced if needed */
+        .field-error {
+            color: #ff0000;
+            font-size: 9px;
+            margin-top: 5px;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            font-weight: bold;
+            display: none; /* Hidden by default */
+        }
+        input.input-error {
+            border: 1px solid #ff0000 !important;
+        }
+    </style>
 </head>
 <body>
 
 <div class="auth-wrapper">
-    <div class="auth-form-container">
-        
-        <?php if($success): ?>
-            <div class="login-success-overlay">
-                <div class="checkmark-circle"><i class="fas fa-check"></i></div>
-                <h3 style="letter-spacing: 1px; text-transform: uppercase;">ACCOUNT CREATED</h3>
-                <p style="font-size: 12px; color: #888;">Welcome to the Apparel family.</p>
-                <p style="font-size: 11px; margin-top: 15px; color: #aaa; text-transform: uppercase;">Redirecting to login...</p>
-            </div>
-        <?php else: ?>
+    <?php if ($success): ?>
+        <div class="login-success-overlay">
+            <div class="checkmark-circle"><i class="fas fa-check"></i></div>
+            <h2 class="success-title">ACCOUNT CREATED</h2>
+            <p class="success-text">Registration successful! You can now sign in.</p>
+            <a href="login.php" class="btn-continue">GO TO LOGIN</a>
+        </div>
+    <?php else: ?>
+
+        <div class="auth-form-container">
             <div class="auth-logo">
-                <a href="index.php">
-                    <img src="assets/images/new_logo.jpg" alt="Apparel's Logo">
-                </a>
+                <a href="index.php"><img src="assets/images/new_logo.jpg" alt="Logo"></a>
             </div>
 
-            <h2>CREATE ACCOUNT</h2>
-            <p class="auth-subtext">JOIN OUR CLOTHING LINE TODAY</p>
-            
-            <form method="POST" class="auth-form" id="registerForm" novalidate>
-    <div class="input-group">
-        <input type="text" name="first_name" id="first_name" placeholder="FIRST NAME">
-        <div id="first_name-error" class="field-error"><i class="fas fa-exclamation-triangle"></i> PLEASE INPUT FIRST NAME</div>
-    </div>
+            <form action="register.php" method="POST" id="regForm" class="auth-form" novalidate>
+                <h2 style="font-size: 14px; letter-spacing: 2px; margin-bottom: 30px; color: #888;">CREATE ACCOUNT</h2>
 
-    <div class="input-group">
-        <input type="text" name="last_name" id="last_name" placeholder="LAST NAME">
-        <div id="last_name-error" class="field-error"><i class="fas fa-exclamation-triangle"></i> PLEASE INPUT LAST NAME</div>
-    </div>
+                <?php if ($error): ?>
+                    <p style="color: #ff0000; font-size: 10px; text-transform: uppercase; margin-bottom: 15px; text-align:center;">
+                        <i class="fas fa-exclamation-circle"></i> <?php echo $error; ?>
+                    </p>
+                <?php endif; ?>
 
-    <div class="input-group">
-        <input type="email" name="email" id="email" placeholder="EMAIL ADDRESS">
-        <div id="email-error" class="field-error"><i class="fas fa-exclamation-triangle"></i> PLEASE INPUT EMAIL</div>
-    </div>
-    
-    <div class="input-group">
-        <div class="pass-field-wrapper">
-            <input type="password" name="password" id="password" placeholder="PASSWORD">
-            <i class="fas fa-eye toggle-icon" onclick="togglePass('password', this)"></i>
+                <div class="input-group">
+                    <label class="minimal-label">First Name</label>
+                    <input type="text" name="first_name" id="first_name" class="minimal-input" placeholder="First Name">
+                    <span class="field-error" id="error_first_name">First name is required</span>
+                </div>
+
+                <div class="input-group">
+                    <label class="minimal-label">Last Name</label>
+                    <input type="text" name="last_name" id="last_name" class="minimal-input" placeholder="Last Name">
+                    <span class="field-error" id="error_last_name">Last name is required</span>
+                </div>
+
+                <div class="input-group">
+                    <label class="minimal-label">Email Address</label>
+                    <input type="email" name="email" id="email" class="minimal-input" placeholder="Email Address">
+                    <span class="field-error" id="error_email">Please enter a valid email</span>
+                </div>
+
+                <div class="input-group">
+                    <label class="minimal-label">Password</label>
+                    <div class="pass-field-wrapper">
+                        <input type="password" name="password" id="regPass" class="minimal-input" placeholder="••••••••">
+                        <i class="fas fa-eye toggle-icon" onclick="togglePass('regPass', this)"></i>
+                    </div>
+                    <span class="field-error" id="error_password">Password must be at least 6 characters</span>
+                </div>
+
+                <div class="input-group">
+                    <label class="minimal-label">Confirm Password</label>
+                    <div class="pass-field-wrapper">
+                        <input type="password" name="confirm_password" id="confirmPass" class="minimal-input" placeholder="••••••••">
+                        <i class="fas fa-eye toggle-icon" onclick="togglePass('confirmPass', this)"></i>
+                    </div>
+                    <span class="field-error" id="error_confirm">Passwords do not match</span>
+                </div>
+
+                <button type="submit" class="register-btn">REGISTER</button>
+
+                <div class="auth-footer">
+                    Already have an account? <a href="login.php">Login</a>
+                </div>
+            </form>
         </div>
-        <div id="password-error" class="field-error"><i class="fas fa-exclamation-triangle"></i> PLEASE INPUT PASSWORD</div>
-    </div>
-
-    <div class="input-group">
-        <div class="pass-field-wrapper">
-            <input type="password" name="confirm_password" id="confirm_password" placeholder="CONFIRM PASSWORD">
-            <i class="fas fa-eye toggle-icon" onclick="togglePass('confirm_password', this)"></i>
-        </div>
-        <div id="confirm_password-error" class="field-error"><i class="fas fa-exclamation-triangle"></i> PLEASE CONFIRM PASSWORD</div>
-    </div>
-
-    <div class="input-group">
-        <input type="text" name="contact_no" id="contact_no" placeholder="CONTACT NO." maxlength="11">
-        <div id="contact_no-error" class="field-error"><i class="fas fa-exclamation-triangle"></i> PLEASE INPUT CONTACT NO.</div>
-    </div>
-
-    <button name="register" type="submit">Register</button>
-</form>
-            
-            <div class="auth-footer">
-                ALREADY HAVE AN ACCOUNT? <a href="login.php">LOGIN HERE</a>
-            </div>
-        <?php endif; ?>
-
-    </div>
+    <?php endif; ?>
 </div>
 
 <script>
-function togglePass(inputId, icon) {
-    const field = document.getElementById(inputId);
-    if (field.type === "password") {
-        field.type = "text";
-        icon.classList.remove("fa-eye");
-        icon.classList.add("fa-eye-slash");
-    } else {
-        field.type = "password";
-        icon.classList.remove("fa-eye-slash");
-        icon.classList.add("fa-eye");
-    }
-}
+    const form = document.getElementById('regForm');
 
-document.getElementById('registerForm')?.addEventListener('submit', function(e) {
-    const fields = ['first_name', 'last_name', 'email', 'password', 'confirm_password', 'contact_no'];
-    let isValid = true;
-    const sErr = document.getElementById('server-error-container');
-    if(sErr) sErr.innerHTML = "";
+    form.addEventListener('submit', function(e) {
+        let hasError = false;
 
-    fields.forEach(id => {
-        const input = document.getElementById(id);
-        const errorDiv = document.getElementById(id + '-error');
-        input.classList.remove('input-error');
-        errorDiv.style.display = 'none';
+        // Helper to show error
+        const showError = (id, show) => {
+            const input = document.getElementById(id);
+            const errorMsg = document.getElementById('error_' + id === 'error_confirmPass' ? 'error_confirm' : 'error_' + id);
+            
+            // Special handling for the confirm ID mapping
+            const errorElement = id === 'confirmPass' ? document.getElementById('error_confirm') : 
+                                 id === 'regPass' ? document.getElementById('error_password') : 
+                                 document.getElementById('error_' + id);
 
-        if (!input.value.trim()) {
-            input.classList.add('input-error');
-            errorDiv.style.display = 'flex';
-            isValid = false;
+            if (show) {
+                input.classList.add('input-error');
+                errorElement.style.display = 'flex';
+                hasError = true;
+            } else {
+                input.classList.remove('input-error');
+                errorElement.style.display = 'none';
+            }
+        };
+
+        // 1. Validate First Name
+        showError('first_name', document.getElementById('first_name').value.trim() === "");
+
+        // 2. Validate Last Name
+        showError('last_name', document.getElementById('last_name').value.trim() === "");
+
+        // 3. Validate Email
+        const email = document.getElementById('email').value.trim();
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        showError('email', !emailRegex.test(email));
+
+        // 4. Validate Password Length
+        const pass = document.getElementById('regPass').value;
+        showError('regPass', pass.length < 6);
+
+        // 5. Validate Password Match
+        const confirm = document.getElementById('confirmPass').value;
+        showError('confirmPass', confirm !== pass || confirm === "");
+
+        if (hasError) {
+            e.preventDefault(); // Stop form submission
         }
     });
 
-    if (isValid) {
-        const email = document.getElementById('email');
-        const contact = document.getElementById('contact_no');
-        const pass = document.getElementById('password');
-        const conf = document.getElementById('confirm_password');
-
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.value)) {
-            email.classList.add('input-error');
-            document.getElementById('email-error').style.display = 'flex';
-            isValid = false;
-        } 
-        
-        if (pass.value !== conf.value) {
-            conf.classList.add('input-error');
-            document.getElementById('confirm_password-error').style.display = 'flex';
-            isValid = false;
-        } 
-        
-        if (!/^09\d{9}$/.test(contact.value)) {
-            contact.classList.add('input-error');
-            document.getElementById('contact_no-error').style.display = 'flex';
-            isValid = false;
+    function togglePass(inputId, icon) {
+        const input = document.getElementById(inputId);
+        if (input.type === "password") {
+            input.type = "text";
+            icon.classList.replace("fa-eye", "fa-eye-slash");
+        } else {
+            input.type = "password";
+            icon.classList.replace("fa-eye-slash", "fa-eye");
         }
     }
-
-    if (!isValid) e.preventDefault();
-});
-
-document.getElementById('contact_no').addEventListener('input', function (e) {
-    this.value = this.value.replace(/[^0-9]/g, '');
-});
 </script>
+
 </body>
 </html>
