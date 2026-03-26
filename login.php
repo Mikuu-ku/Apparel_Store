@@ -2,7 +2,6 @@
 session_start();
 include "config/database.php";
 
-// Redirect if already logged in
 if (isset($_SESSION['user_id'])) {
     if ($_SESSION['role'] === 'admin') {
         header("Location: admin/dashboard.php");
@@ -98,7 +97,7 @@ if (isset($_POST['login'])) {
                 </div>
 
                 <?php if(!empty($error)): ?>
-                    <div class="field-error" style="display: flex; justify-content: center; margin-bottom: 15px; width: 100%;">
+                    <div id="php-error" class="field-error" style="display: flex; justify-content: center; margin-bottom: 15px; width: 100%;">
                         <i class="fas fa-exclamation-triangle"></i> <?= $error ?>
                     </div>
                 <?php endif; ?>
@@ -114,7 +113,6 @@ if (isset($_POST['login'])) {
 </div>
 
 <script>
-// Toggle Password Visibility
 function togglePass(inputId, icon) {
     const field = document.getElementById(inputId);
     if (field.type === "password") {
@@ -128,29 +126,47 @@ function togglePass(inputId, icon) {
     }
 }
 
-// Custom Validation Logic
-document.getElementById('loginForm')?.addEventListener('submit', function(e) {
-    const emailInput = document.getElementById('email');
-    const passInput = document.getElementById('password');
-    const emailError = document.getElementById('email-error');
-    const passError = document.getElementById('password-error');
+const loginForm = document.getElementById('loginForm');
+const emailInput = document.getElementById('email');
+const passInput = document.getElementById('password');
+const emailError = document.getElementById('email-error');
+const passError = document.getElementById('password-error');
+
+function clearErrors() {
+    const phpError = document.getElementById('php-error');
     
-    // Reset states
     emailError.style.display = 'none';
     passError.style.display = 'none';
+    
     emailInput.classList.remove('input-error');
     passInput.classList.remove('input-error');
+    
+    if (phpError) {
+        phpError.style.display = 'none';
+    }
+}
 
+emailInput?.addEventListener('input', function() {
+    if (this.value.trim() !== "") {
+        clearErrors();
+    }
+});
+
+passInput?.addEventListener('input', function() {
+    if (this.value.trim() !== "") {
+        clearErrors();
+    }
+});
+
+loginForm?.addEventListener('submit', function(e) {
     let isValid = true;
 
-    // Validate Email
     if (!emailInput.value.trim()) {
         emailInput.classList.add('input-error');
         emailError.style.display = 'flex';
         isValid = false;
     } 
     
-    // Validate Password
     if (!passInput.value.trim()) {
         passInput.classList.add('input-error');
         passError.style.display = 'flex';
@@ -158,7 +174,7 @@ document.getElementById('loginForm')?.addEventListener('submit', function(e) {
     }
 
     if (!isValid) {
-        e.preventDefault(); // Stop form from submitting
+        e.preventDefault(); 
     }
 });
 </script>

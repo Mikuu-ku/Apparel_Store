@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Feb 08, 2026 at 12:53 PM
+-- Generation Time: Mar 26, 2026 at 03:02 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -64,21 +64,13 @@ CREATE TABLE `orders` (
 --
 
 INSERT INTO `orders` (`id`, `user_id`, `full_name`, `address`, `total_amount`, `payment_method`, `status`, `created_at`) VALUES
-(1, 2, 'Kashmir Espinosa', 'Marigondon, Crossing, LLC', 1296.00, 'COD', 'Shipped', '2026-01-20 14:59:02'),
-(2, 2, 'Kashmir', 'skina earth', 20489.00, 'COD', 'Pending', '2026-01-25 10:48:59'),
-(3, 7, 'josh', 'mactan', 3998.00, 'COD', 'Pending', '2026-01-26 04:20:35'),
-(4, 8, 'Kashmir', 'skina earth', 19990.00, 'COD', 'Pending', '2026-01-26 11:26:42'),
-(5, 8, 'Kashmir', 'dsadsad', 39980.00, 'COD', 'Pending', '2026-01-26 11:31:57'),
-(6, 8, 'Kashmir', 'dsadsa', 39980.00, 'COD', 'Pending', '2026-01-26 11:34:14'),
-(7, 8, 'Kashmir', 'dsada', 39980.00, 'COD', 'Pending', '2026-01-26 11:35:45'),
-(8, 8, 'Kashmir', 'dsadad', 3998.00, 'COD', 'Pending', '2026-01-26 11:37:17'),
-(9, 8, 'Kashmir Espinosa', 'dsadsadsa | Phone: 09123456789', 2049.00, 'COD', 'Pending', '2026-01-26 12:06:39'),
 (10, 2, 'Kashmir Espinosa', 'marigondon | Phone: 09333993708', 2049.00, 'COD', 'Completed', '2026-01-26 12:34:16'),
 (11, 8, 'Kashmir Espinosa', 'asdas | Phone: 09123456789', 1295.00, 'COD', 'Completed', '2026-01-27 03:39:29'),
 (12, 2, 'Kashmir Espinosa', 'dsdadada | Phone: 09872342344', 20040.00, 'GCASH (Ref: 2131)', 'Completed', '2026-01-27 04:21:53'),
 (13, 8, 'Kashmir Espinosa', 'asdasdsadsadasd | Phone: 09123456789', 20040.00, 'COD', 'Pending', '2026-02-08 11:31:37'),
 (14, 8, 'Kashmir Espinosa', '232323sqd | Phone: 09123456789', 20040.00, 'COD', 'Pending', '2026-02-08 11:33:43'),
-(15, 8, 'Kashmir Espinosa', 'asdsadsa | Phone: 09123456789', 20040.00, 'COD', 'Pending', '2026-02-08 11:35:24');
+(15, 8, 'Kashmir Espinosa', 'asdsadsa | Phone: 09123456789', 20040.00, 'COD', 'Completed', '2026-02-08 11:35:24'),
+(16, 8, 'Kashmir Espinosa', 'Marigondon Crossing', 20000.00, 'GCASH (Ref: 1242)', 'Pending', '2026-03-22 15:38:50');
 
 -- --------------------------------------------------------
 
@@ -91,6 +83,7 @@ CREATE TABLE `order_items` (
   `order_id` int(11) DEFAULT NULL,
   `product_id` int(11) DEFAULT NULL,
   `quantity` int(11) DEFAULT NULL,
+  `size` varchar(10) DEFAULT NULL,
   `price` decimal(10,2) DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
@@ -98,13 +91,14 @@ CREATE TABLE `order_items` (
 -- Dumping data for table `order_items`
 --
 
-INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `price`) VALUES
-(1, 10, 10, 1, NULL),
-(2, 11, 2, 5, NULL),
-(3, 12, 11, 10, NULL),
-(4, 13, 11, 10, NULL),
-(5, 14, 11, 10, NULL),
-(6, 15, 11, 10, NULL);
+INSERT INTO `order_items` (`id`, `order_id`, `product_id`, `quantity`, `size`, `price`) VALUES
+(1, 10, 10, 1, 'XXL', 1999.00),
+(2, 11, 2, 5, 'L', 249.00),
+(3, 12, 11, 10, 'L', 1999.00),
+(4, 13, 11, 10, 'XXL', 1999.00),
+(5, 14, 11, 10, 'XXL', 1999.00),
+(6, 15, 11, 10, 'L', 1999.00),
+(7, 16, 11, 10, 'XXL', 1999.00);
 
 -- --------------------------------------------------------
 
@@ -142,7 +136,7 @@ INSERT INTO `products` (`id`, `name`, `description`, `price`, `size`, `color`, `
 (8, 'Essential Pants – Ash Gray', 'Balanced and timeless, the Ash Gray Essential Pants are built for everyday movement. A reliable piece for both comfort and style.', 499.00, 'S, M, L, XL, XXL', 'Gray', 'gray_pants.jpg', 'Bottoms', 0, 0, 0, 0),
 (9, 'Essential Hoodie – Cloud White', 'This Cloud White hoodie delivers warmth and softness with a clean, modern finish. Perfect for layering or wearing on its own in cooler weather.', 1999.00, 'S, M, L, XL, XXL', 'White', 'white_hoodie.jpg', 'Essentials', 0, 0, 0, 0),
 (10, 'Essential Hoodie – Midnight Black', 'A classic essential, the Midnight Black hoodie offers a relaxed fit and premium comfort. Designed for effortless streetwear appeal.', 1999.00, 'S, M, L, XL, XXL', 'Black', 'black_hoodie.jpg', 'Essentials', 134, 16, 33, 32),
-(11, 'Essential Hoodie – Wine Maroon', 'Rich in tone and comfort, the Wine Maroon Essential Hoodie adds warmth and personality to your look. Ideal for casual wear and everyday layering.', 1999.00, 'S, M, L, XL, XXL', 'Maroon', 'maroon_hoodie.jpg', 'Essentials', 113, 90, 471, 324),
+(11, 'Essential Hoodie – Wine Maroon', 'Rich in tone and comfort, the Wine Maroon Essential Hoodie adds warmth and personality to your look. Ideal for casual wear and everyday layering.', 1999.00, 'S, M, L, XL, XXL', 'Maroon', 'maroon_hoodie.jpg', 'Essentials', 113, 90, 461, 324),
 (12, 'Essential Hoodie – Ash Gray', 'Minimal and versatile, the Ash Gray Essential Hoodie combines comfort with a neutral aesthetic. A go-to piece for any season.', 1999.00, 'S, M, L, XL, XXL', 'Gray', 'gray_hoodie.jpg', 'Essentials', 0, 0, 0, 0);
 
 -- --------------------------------------------------------
@@ -222,19 +216,19 @@ ALTER TABLE `users`
 -- AUTO_INCREMENT for table `cart`
 --
 ALTER TABLE `cart`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=32;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=33;
 
 --
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=16;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=19;
 
 --
 -- AUTO_INCREMENT for table `order_items`
 --
 ALTER TABLE `order_items`
-  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=7;
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `products`

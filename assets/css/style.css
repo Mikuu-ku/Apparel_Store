@@ -255,7 +255,6 @@ body {
 .pass-field-wrapper {
     position: relative;
     width: 100%;
-    /* Ensure the wrapper behaves as a flex container to align the input and icon */
     display: flex;
     align-items: center; 
 }

@@ -37,9 +37,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register | Apparel's Clothing Line</title>
     <link rel="stylesheet" href="assets/css/style.css?v=<?php echo time(); ?>">
+    <link rel="icon" type="image/png" href="assets/images/new_logo.jpg">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <style>
-        /* Ensuring our error styles from your CSS are forced if needed */
         .field-error {
             color: #ff0000;
             font-size: 9px;
@@ -47,7 +47,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             letter-spacing: 1px;
             text-transform: uppercase;
             font-weight: bold;
-            display: none; /* Hidden by default */
+            display: none; 
         }
         input.input-error {
             border: 1px solid #ff0000 !important;
@@ -128,51 +128,69 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 <script>
     const form = document.getElementById('regForm');
+    const inputs = ['first_name', 'last_name', 'email', 'regPass', 'confirmPass'];
 
-    form.addEventListener('submit', function(e) {
+    const showError = (id, show) => {
+        const input = document.getElementById(id);
+        if (!input) return false;
+
+        let errorId = 'error_' + id;
+        if (id === 'confirmPass') errorId = 'error_confirm';
+        if (id === 'regPass') errorId = 'error_password';
+
+        const errorElement = document.getElementById(errorId);
+
+        if (show) {
+            input.classList.add('input-error');
+            if (errorElement) errorElement.style.display = 'flex';
+            return true; 
+        } else {
+            input.classList.remove('input-error');
+            if (errorElement) errorElement.style.display = 'none';
+            return false;
+        }
+    };
+
+    inputs.forEach(id => {
+        const element = document.getElementById(id);
+        element?.addEventListener('input', function() {
+            if (id === 'confirmPass' || id === 'regPass') {
+                const pass = document.getElementById('regPass').value;
+                const confirm = document.getElementById('confirmPass').value;
+                
+                if (confirm === pass && confirm !== "") {
+                    showError('confirmPass', false);
+                }
+                if (id === 'regPass' && pass.length >= 6) {
+                    showError('regPass', false);
+                }
+            } else {
+                if (this.value.trim() !== "") {
+                    showError(id, false);
+                }
+            }
+        });
+    });
+
+    form?.addEventListener('submit', function(e) {
         let hasError = false;
 
-        // Helper to show error
-        const showError = (id, show) => {
-            const input = document.getElementById(id);
-            const errorMsg = document.getElementById('error_' + id === 'error_confirmPass' ? 'error_confirm' : 'error_' + id);
-            
-            // Special handling for the confirm ID mapping
-            const errorElement = id === 'confirmPass' ? document.getElementById('error_confirm') : 
-                                 id === 'regPass' ? document.getElementById('error_password') : 
-                                 document.getElementById('error_' + id);
+        if (showError('first_name', document.getElementById('first_name').value.trim() === "")) hasError = true;
 
-            if (show) {
-                input.classList.add('input-error');
-                errorElement.style.display = 'flex';
-                hasError = true;
-            } else {
-                input.classList.remove('input-error');
-                errorElement.style.display = 'none';
-            }
-        };
+        if (showError('last_name', document.getElementById('last_name').value.trim() === "")) hasError = true;
 
-        // 1. Validate First Name
-        showError('first_name', document.getElementById('first_name').value.trim() === "");
-
-        // 2. Validate Last Name
-        showError('last_name', document.getElementById('last_name').value.trim() === "");
-
-        // 3. Validate Email
         const email = document.getElementById('email').value.trim();
         const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        showError('email', !emailRegex.test(email));
+        if (showError('email', !emailRegex.test(email))) hasError = true;
 
-        // 4. Validate Password Length
         const pass = document.getElementById('regPass').value;
-        showError('regPass', pass.length < 6);
+        if (showError('regPass', pass.length < 6)) hasError = true;
 
-        // 5. Validate Password Match
         const confirm = document.getElementById('confirmPass').value;
-        showError('confirmPass', confirm !== pass || confirm === "");
+        if (showError('confirmPass', confirm !== pass || confirm === "")) hasError = true;
 
         if (hasError) {
-            e.preventDefault(); // Stop form submission
+            e.preventDefault(); 
         }
     });
 

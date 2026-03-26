@@ -126,7 +126,6 @@ $orders = mysqli_query($conn, "SELECT * FROM orders $search_query ORDER BY creat
                 <tbody>
                     <?php while($row = mysqli_fetch_assoc($orders)): 
                         $oid = $row['id'];
-                        // Fetch items from order_items table
                         $item_query = mysqli_query($conn, "SELECT oi.*, p.name FROM order_items oi JOIN products p ON oi.product_id = p.id WHERE oi.order_id = $oid");
                         $items = [];
                         while($item = mysqli_fetch_assoc($item_query)) { $items[] = $item; }
