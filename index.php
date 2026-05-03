@@ -2,10 +2,7 @@
 session_start();
 include "config/database.php";
 
-// REVISED ADMIN LOGIC: 
-// Removed the header redirect so admins can actually see the store.
 $is_admin = (isset($_SESSION['role']) && $_SESSION['role'] === 'admin');
-
 $v = time(); 
 
 $display_name = "USER";
@@ -65,15 +62,100 @@ if (isset($_SESSION['user_id'])) {
             z-index: 10000;
             border-bottom: 1px solid #333;
         }
-        .admin-top-bar a {
-            color: #fff;
-            text-decoration: none;
-            margin-left: 20px;
-            text-transform: uppercase;
-            font-weight: 700;
-        }
-        .admin-top-bar a:hover { color: #aaa; }
+        .admin-top-bar a { color: #fff; text-decoration: none; margin-left: 20px; text-transform: uppercase; font-weight: 700; }
         .admin-tag { background: #fff; color: #000; padding: 2px 8px; font-weight: 900; margin-right: 10px; }
+
+        /* Carousel Layout - FIXED ZOOM/SCALING */
+        .hero-carousel {
+    position: relative;
+    width: 100%;
+    max-width: 1200px;
+    margin: 20px auto;
+    height: 500px;
+    overflow: hidden;
+    background: #000; /* Black base */
+}
+        .carousel-container {
+            display: flex;
+            height: 100%;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .carousel-slide {
+    min-width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: row-reverse; /* Put image on left, text on right */
+    align-items: center;
+    background: #000;
+}
+        .carousel-slide img {
+    flex: 1.2; /* Makes the image area slightly wider than the text area */
+    width: 50%;
+    height: 100%;
+    object-fit: cover; /* Back to cover since it's a side-panel now */
+    background: #1a1a1a;
+}
+        .carousel-caption {
+    position: relative;
+    flex: 1;
+    padding: 60px;
+    background: #000; /* Pure black background for the text */
+    color: #fff; /* White text for visibility */
+    z-index: 5;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+        .carousel-caption h2 { 
+    font-size: 42px; 
+    font-weight: 700;
+    letter-spacing: 2px;
+    color: #fff;
+    margin-bottom: 10px;
+}
+        .carousel-caption p {
+    font-size: 16px;
+    color: #ccc; /* Slightly grey for the price to keep hierarchy */
+    margin-bottom: 30px;
+}
+        
+        .btn-shop-now {
+    display: inline-block;
+    background: #fff;
+    color: #000;
+    width: fit-content;
+    padding: 15px 35px;
+    text-decoration: none;
+    font-weight: 700;
+    text-transform: uppercase;
+    transition: 0.3s;
+    border: 1px solid #fff;
+}
+        .btn-shop-now:hover {
+    background: transparent;
+    color: #fff;
+}
+        .carousel-prev, .carousel-next {
+            position: absolute;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(0,0,0,0.3);
+            color: #fff;
+            border: none;
+            padding: 20px 15px;
+            cursor: pointer;
+            z-index: 10;
+        }
+        .carousel-next { right: 0; }
+        .carousel-prev { left: 0; }
+        .carousel-dots { position: absolute; bottom: 20px; width: 100%; text-align: center; z-index: 10; }
+        .dot { height: 8px; width: 8px; margin: 0 5px; background: rgba(255,255,255,0.4); border-radius: 50%; display: inline-block; cursor: pointer; transition: 0.3s; }
+        .dot.active { background: #fff; width: 25px; border-radius: 10px; }
+
+        /* Sold Out Styling */
+        .oos-card { opacity: 0.6; cursor: not-allowed !important; }
+        .badge { background: #ff4444; color: #fff; padding: 5px 10px; position: absolute; top: 10px; left: 10px; z-index: 5; font-weight: bold; font-size: 10px; }
     </style>
 </head>
 <body>
@@ -82,7 +164,7 @@ if (isset($_SESSION['user_id'])) {
 <div class="admin-top-bar">
     <div>
         <span class="admin-tag">ADMIN MODE</span>
-        <span>Viewing live site as Administrator</span>
+        <span>Logged in as Administrator</span>
     </div>
     <div>
         <a href="admin/dashboard.php"><i class="fas fa-chart-line"></i> Dashboard</a>
@@ -97,7 +179,7 @@ if (isset($_SESSION['user_id'])) {
     <div class="container header-container">
         <div class="logo">
             <a href="index.php">
-                <img src="assets/images/new_logo.jpg" alt="Apparel's Logo" class="header-logo">
+                <img src="assets/images/new_logo.jpg" alt="Logo" class="header-logo">
             </a>
         </div>
 
@@ -144,10 +226,41 @@ if (isset($_SESSION['user_id'])) {
     <div class="container">
         <nav class="category-bar">
             <a href="index.php" class="cat-link <?php echo $category == '' ? 'active' : ''; ?>">ALL</a>
-            <a href="index.php?category=Tops" class="cat-link <?php echo $category == 'Tops' ? 'active' : ''; ?>">TOPS</a>
+            <a href="index.php?category=Tshirts" class="cat-link <?php echo $category == 'Tshirts' ? 'active' : ''; ?>">TSHIRTS</a>
             <a href="index.php?category=Bottoms" class="cat-link <?php echo $category == 'Bottoms' ? 'active' : ''; ?>">BOTTOMS</a>
             <a href="index.php?category=Essentials" class="cat-link <?php echo $category == 'Essentials' ? 'active' : ''; ?>">HOODIES</a>
         </nav>
+    </div>
+</div>
+
+<div class="hero-carousel">
+    <div class="carousel-container" id="carouselContainer">
+        <?php
+        $carousel_query = mysqli_query($conn, "SELECT * FROM products ORDER BY id DESC LIMIT 8");
+        $slide_count = 0;
+        while($c_row = mysqli_fetch_assoc($carousel_query)): 
+        ?>
+            <div class="carousel-slide">
+                <img src="assets/uploads/<?php echo $c_row['image']; ?>" alt="Featured product">
+                <div class="carousel-caption">
+                    <h2><?php echo strtoupper($c_row['name']); ?></h2>
+                    <p>New Arrival - ₱<?php echo number_format($c_row['price'], 2); ?></p>
+                    <a href="index.php" class="btn-shop-now">View Collection</a>
+                </div>
+            </div>
+        <?php 
+            $slide_count++;
+        endwhile; 
+        ?>
+    </div>
+    
+    <button class="carousel-prev" onclick="moveSlide(-1)">&#10094;</button>
+    <button class="carousel-next" onclick="moveSlide(1)">&#10095;</button>
+
+    <div class="carousel-dots">
+        <?php for($i=0; $i < $slide_count; $i++): ?>
+            <span class="dot <?php echo $i === 0 ? 'active' : ''; ?>" onclick="currentSlide(<?php echo $i; ?>)"></span>
+        <?php endfor; ?>
     </div>
 </div>
 
@@ -178,7 +291,7 @@ if (isset($_SESSION['user_id'])) {
             <?php endif; ?>
 
             <div class="product-link">
-                <img src="assets/images/<?php echo $row['image']; ?>" alt="Product">
+                <img src="assets/uploads/<?php echo $row['image']; ?>" alt="Product">
                 <?php if(!$is_out_of_stock): ?>
                     <div class="hover-container"><span class="hover-text">Quick View</span></div>
                 <?php endif; ?>
@@ -214,6 +327,7 @@ if (isset($_SESSION['user_id'])) {
     </div>
 </footer>
 
+<!-- QUICK VIEW MODAL -->
 <div id="quickViewModal" class="modal">
     <div class="modal-content">
         <span class="close" onclick="closeModal()">&times;</span>
@@ -221,7 +335,6 @@ if (isset($_SESSION['user_id'])) {
             <div class="modal-image" id="zoomContainer">
                 <img id="modalImg" src="" alt="Product Image">
             </div>
-
             <div class="modal-info">
                 <h2 id="modalName"></h2>
                 <p id="modalPrice" class="detail-price"></p>
@@ -230,43 +343,20 @@ if (isset($_SESSION['user_id'])) {
                 <form action="add_to_cart_check.php" method="POST">
                     <input type="hidden" name="product_id" id="modalId">
                     <input type="hidden" name="add_to_cart" value="1">
-                    
                     <div class="size-selection">
                         <label class="size-title">SELECT SIZE</label>
                         <div class="size-options">
-                            <div class="size-item">
-                                <input type="radio" name="size" value="S" id="s" required>
-                                <label for="s" id="label_s">S</label>
-                                <span class="stock-label" id="stock_s"></span>
-                            </div>
-                            <div class="size-item">
-                                <input type="radio" name="size" value="M" id="m">
-                                <label for="m" id="label_m">M</label>
-                                <span class="stock-label" id="stock_m"></span>
-                            </div>
-                            <div class="size-item">
-                                <input type="radio" name="size" value="L" id="l">
-                                <label for="l" id="label_l">L</label>
-                                <span class="stock-label" id="stock_l"></span>
-                            </div>
-                            <div class="size-item">
-                                <input type="radio" name="size" value="XL" id="xl">
-                                <label for="xl" id="label_xl">XL</label>
-                                <span class="stock-label" id="stock_xl"></span>
-                            </div>
+                            <div class="size-item"><input type="radio" name="size" value="S" id="s" required><label for="s" id="label_s">S</label><span class="stock-label" id="stock_s"></span></div>
+                            <div class="size-item"><input type="radio" name="size" value="M" id="m"><label for="m" id="label_m">M</label><span class="stock-label" id="stock_m"></span></div>
+                            <div class="size-item"><input type="radio" name="size" value="L" id="l"><label for="l" id="label_l">L</label><span class="stock-label" id="stock_l"></span></div>
+                            <div class="size-item"><input type="radio" name="size" value="XL" id="xl"><label for="xl" id="label_xl">XL</label><span class="stock-label" id="stock_xl"></span></div>
                         </div>
                     </div>
-
                     <div class="qty-selection">
                         <label>QUANTITY</label>
-                        <div class="qty-input-wrapper">
-                            <input type="number" name="quantity" id="modalQtyInput" value="1" min="1">
-                        </div>
+                        <div class="qty-input-wrapper"><input type="number" name="quantity" id="modalQtyInput" value="1" min="1"></div>
                     </div>
-                    
-                    <button type="submit" class="btn-add-cart">
-                        <?php echo isset($_SESSION['user_id']) ? 'Add to Cart' : 'Login to Add to Cart'; ?>
-                    </button>
+                    <button type="submit" class="btn-add-cart"><?php echo isset($_SESSION['user_id']) ? 'Add to Cart' : 'Login to Add to Cart'; ?></button>
                 </form>
             </div>
         </div>
@@ -274,23 +364,26 @@ if (isset($_SESSION['user_id'])) {
 </div>
 
 <script>
-const searchBtn = document.getElementById('searchBtn');
+let slideIndex = 0;
+const slides = document.querySelectorAll('.carousel-slide');
+const dots = document.querySelectorAll('.dot');
+
+function showSlides() {
+    if (slideIndex >= slides.length) slideIndex = 0;
+    if (slideIndex < 0) slideIndex = slides.length - 1;
+    const container = document.getElementById('carouselContainer');
+    if(container) container.style.transform = `translateX(-${slideIndex * 100}%)`;
+    dots.forEach(dot => dot.classList.remove('active'));
+    if(dots[slideIndex]) dots[slideIndex].classList.add('active');
+}
+
+function moveSlide(n) { slideIndex += n; showSlides(); }
+function currentSlide(n) { slideIndex = n; showSlides(); }
+setInterval(() => { slideIndex++; showSlides(); }, 5000);
+
 const searchInput = document.getElementById('searchInput');
 const resultsPopup = document.getElementById('searchResultsPopup');
 const quickViewModal = document.getElementById('quickViewModal');
-
-if (searchBtn && searchInput) {
-    searchBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation(); 
-        searchInput.classList.toggle('active');
-        if (searchInput.classList.contains('active')) {
-            searchInput.focus();
-        } else {
-            resultsPopup.style.display = 'none';
-        }
-    });
-}
 
 if (searchInput) {
     searchInput.addEventListener('input', function() {
@@ -302,73 +395,44 @@ if (searchInput) {
                     resultsPopup.innerHTML = data;
                     resultsPopup.style.display = 'block';
                 });
-        } else {
-            resultsPopup.style.display = 'none';
-        }
+        } else { resultsPopup.style.display = 'none'; }
     });
 }
 
 function handleQuickView(input) {
-    if (!quickViewModal) return;
-    if (searchInput) searchInput.classList.remove('active');
-    if (resultsPopup) resultsPopup.style.display = 'none';
-
     const data = input.dataset;
-    
-    document.querySelectorAll('.size-item input[type="radio"]').forEach(r => {
-        r.checked = false;
-        r.disabled = false;
-    });
-
     document.getElementById('modalName').innerText = data.name;
     document.getElementById('modalPrice').innerText = '₱' + parseFloat(data.price).toLocaleString(undefined, {minimumFractionDigits: 2});
     document.getElementById('modalDesc').innerText = data.desc;
-    document.getElementById('modalImg').src = 'assets/images/' + data.image;
+    document.getElementById('modalImg').src = 'assets/uploads/' + data.image;
     document.getElementById('modalId').value = data.id;
-    document.getElementById('modalQtyInput').value = 1;
-
-    const sizes = ['s', 'm', 'l', 'xl'];
-    sizes.forEach(size => {
+    
+    ['s', 'm', 'l', 'xl'].forEach(size => {
         const stock = parseInt(data[size]);
-        const inputRadio = document.getElementById(size);
-        const label = document.getElementById('label_' + size);
-        const stockLabel = document.getElementById('stock_' + size);
-
-        if (stockLabel) stockLabel.innerText = stock + " LEFT";
-
+        const rb = document.getElementById(size);
+        const lbl = document.getElementById('label_' + size);
+        const slbl = document.getElementById('stock_' + size);
+        slbl.innerText = stock + " LEFT";
         if (stock <= 0) {
-            if (inputRadio) inputRadio.disabled = true;
-            if (label) {
-                label.style.opacity = "0.2";
-                label.style.textDecoration = "line-through";
-            }
-            if (stockLabel) stockLabel.style.color = "#ff0000"; 
+            rb.disabled = true;
+            lbl.style.opacity = "0.2";
+            lbl.style.textDecoration = "line-through";
         } else {
-            if (label) {
-                label.style.opacity = "1";
-                label.style.textDecoration = "none";
-            }
-            if (stockLabel) stockLabel.style.color = "#888"; 
+            rb.disabled = false;
+            lbl.style.opacity = "1";
+            lbl.style.textDecoration = "none";
         }
     });
-
     quickViewModal.style.display = "block";
-    document.body.style.overflow = "hidden"; 
+    document.body.style.overflow = "hidden";
 }
 
 function closeModal() {
-    if (quickViewModal) {
-        quickViewModal.style.display = "none";
-        document.body.style.overflow = "auto";
-    }
+    quickViewModal.style.display = "none";
+    document.body.style.overflow = "auto";
 }
 
-window.onclick = function(event) {
-    if (event.target == quickViewModal) { closeModal(); }
-    if (resultsPopup && !event.target.closest('.search-wrapper')) {
-        resultsPopup.style.display = 'none';
-    }
-}
+window.onclick = (e) => { if (e.target == quickViewModal) closeModal(); }
 </script>
 </body>
 </html>
